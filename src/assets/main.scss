@@ -1,0 +1,23 @@
+.h {
+  display: none !important;
+}
+
+.stage-container {
+  position: relative;
+  width: 800px;
+  height: 600px;
+}
+canvas {
+  border: 1px solid tomato;
+  background-color: #ccc;
+}
+
+.stage-container {
+  position: relative;
+}
+.center-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
