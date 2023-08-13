@@ -8,6 +8,8 @@ import {
   IStage,
   Note,
   NodeDataFixed,
+  CollisionDirection,
+  IVecNullable,
 } from "./contracts";
 import { Sound, noteFrequencies } from "./soundComponent";
 import { mXs } from "./utils";
@@ -16,7 +18,8 @@ export class PositionComponent implements IComponent {
   type: "position";
   p: IVec;
   v: IVec;
-  lp: IVec;
+  lp: IVec; // TODO remove
+  maxMove: [t: number | null, r: number | null, b: number | null, l: number | null] = [null, null, null, null];
   direction: number;
   constructor(p: IVec, v: IVec = [0, 0]) {
     this.type = "position";
@@ -33,7 +36,21 @@ export class PositionComponent implements IComponent {
 
     // Apply movement
     const [vx, vy] = this.v;
-    this.p = [x + mXs(vx, delta), y + mXs(vy, delta)];
+
+    let mvY = mXs(vy, delta);
+    let mvX = mXs(vx, delta);
+
+    // console.log(this.maxMove);
+
+    if (this.maxMove[2] !== null && mvY * 2 > this.maxMove[2]) {
+      mvY = this.maxMove[2];
+    }
+    if (this.maxMove[1] !== null && mvX * 2 > this.maxMove[1]) {
+      // console.log("max move right", mvX, this.maxMove[1]);
+      mvX = this.maxMove[1];
+    }
+
+    this.p = [x + mvX, y + mvY];
   }
 }
 
@@ -41,11 +58,12 @@ export class BoxColliderComponent implements IComponent {
   type: "collider";
   box: IVec;
   trigger: boolean;
-  onCollide?: (e: IEntity) => void;
-  onCollideFn?: (e: IEntity) => void;
+  onCollide?: (e: IEntity, c: CollisionDirection) => void;
+  onCollideFn?: (e: IEntity, c: CollisionDirection) => void;
   isColliding: boolean;
+  collisions: { e: IEntity; c: CollisionDirection }[] = [];
 
-  constructor(box: IVec, onCollide?: (e: IEntity) => void) {
+  constructor(box: IVec, onCollide?: (e: IEntity, b: CollisionDirection) => void) {
     this.type = "collider";
     this.box = box;
     this.trigger = true;
@@ -67,6 +85,7 @@ export class BoxColliderComponent implements IComponent {
     ctx.rect(x, y, w, h);
     ctx.strokeStyle = "lime";
     ctx.stroke();
+    ctx.closePath();
   }
 }
 
@@ -78,10 +97,12 @@ export class SpriteRenderComponent implements IComponent {
   time: number;
   currentFrame: number;
   currentAnimation: string;
+  renderPriority: number;
 
-  constructor(sprite: Sprite, defaultAnimation: string) {
+  constructor(sprite: Sprite, defaultAnimation: string, renderPriority: number = 0) {
     this.type = "render";
     this.sprite = sprite;
+    this.renderPriority = renderPriority;
     this.setupAnimation(defaultAnimation);
   }
   onInit(e: IEntity): void {
@@ -126,12 +147,14 @@ export class ImgRenderComponent implements IComponent {
   type: ComponentType;
   stage: IStage;
   image: HTMLImageElement;
+  renderPriority: number;
 
   pos: IVec;
 
-  constructor(image: HTMLImageElement) {
+  constructor(image: HTMLImageElement, renderPriority: number = 99) {
     this.type = "render";
     this.image = image;
+    this.renderPriority = renderPriority;
   }
   onInit(e: IEntity): void {
     this.stage = e.stage;
@@ -147,16 +170,21 @@ export class GravityComponent implements IComponent {
   type: ComponentType;
   gravity: number;
   ev: number;
-  constructor(gravity: number = 12, ev: number = null) {
+  active: true;
+  constructor(gravity: number = 10, ev: number = null) {
     this.type = "gravity";
-    this.gravity = gravity;
-    this.ev = !!ev ? ev : gravity * 10;
+    this.gravity = gravity * 10;
+    this.ev = !!ev ? ev : gravity * 100;
   }
   onUpdate(e: IEntity, delta: number): void {
     const pos = (e.components["position"] as PositionComponent).p;
+    const box = e.components["collider"] as BoxColliderComponent;
+
     const [x, y] = pos;
     const v = (e.components["position"] as PositionComponent).v;
-    const accV = Math.max(v[1] + mXs(this.gravity, delta), this.ev);
+
+    // const accV = Math.max(v[1] + mXs(this.gravity, delta), this.ev);
+    const accV = v[1] + mXs(this.gravity, delta);
     (e.components["position"] as PositionComponent).v = [v[0], accV];
   }
 }

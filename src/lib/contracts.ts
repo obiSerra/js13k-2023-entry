@@ -1,4 +1,5 @@
 export type IVec = [number, number];
+export type IVecNullable = [number | null, number | null];
 
 export type ComponentType = "position" | "control" | "collider" | "render" | "gravity" | "sound" | "menu" | "html";
 
@@ -10,6 +11,10 @@ export interface IComponent {
   onTerminate?(e: IEntity): void;
 }
 
+export interface IRenderComponent extends IComponent {
+  renderPriority: number;
+}
+
 export interface RenderComponent extends IComponent {
   type: "render";
 }
@@ -18,7 +23,6 @@ export interface IEntity {
   ID: string;
   stage: IStage;
   components: { [key: string]: IComponent };
-  hasRender: boolean;
   pos?: IVec;
   v?: IVec;
   box?: IVec;
@@ -31,7 +35,7 @@ export interface IEntity {
   update?(delta: number, gameState?: GameStateAPI): void;
   onUpdateStart?(delta: number, gameState?: GameStateAPI): void;
   onUpdateEnd?(delta: number, gameState?: GameStateAPI): void;
-  onCollide(e: IEntity): void;
+  onCollide(e: IEntity, c: CollisionDirection): void;
   initComponent?(c: string): void;
   componentList?(): IComponent[];
   addComponent?(c: IComponent): void;
@@ -109,3 +113,6 @@ export type NodeDataFixed = {
 export type MusicSheet = NodeDataFixed[];
 
 export type NoteFrequencies = { [k: string]: number };
+
+// export type CollisionDirection = { [keyof: string]: boolean };
+export type CollisionDirection = any;

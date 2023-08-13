@@ -65,6 +65,29 @@ export class GameLoop {
     if (this.resumeCb) this.resumeCb();
   }
 
+  monoLoop() {
+    ra((time: number) => {
+      if (this.state === RUNNING_ST) {
+        const now = +new Date();
+
+        const delta = now - this.lastUpdateCall;
+        this.updateFps = Math.floor(1000 / delta);
+        this.lastUpdateCall = now;
+        if (this.updateCb) this.updateCb(delta);
+      }
+
+      const s = this.stage;
+      s.ctx.clearRect(0, 0, s.canvas.width, s.canvas.height);
+      const delta = time - this.lastRenderCall;
+      this.renderFps = Math.floor(1000 / delta);
+      this.renderDebug();
+      this.lastRenderCall = time;
+
+      if (this.renderCb) this.renderCb(delta);
+      this.monoLoop();
+    });
+  }
+
   renderLoop() {
     ra((time: number) => {
       const s = this.stage;
@@ -95,8 +118,8 @@ export class GameLoop {
   }
   mainLoop() {
     this.lastUpdateCall = +new Date();
-    this.updateLoop();
-    this.renderLoop();
+    this.monoLoop();
+    
   }
 
   renderDebug() {
