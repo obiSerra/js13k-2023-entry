@@ -10,59 +10,6 @@ export const isCollide = (a: IVec, as: IVec, b: IVec, bs: IVec) => {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 };
 
-export const resolveCollisionsOld = (entities: IEntity[]) => {
-  const triggers = entities.filter(e => !!e.getComponent<BoxColliderComponent>("collider").onCollide);
-  for (let i = 0; i < triggers.length; i++) {
-    const a = triggers[i];
-    const c = a.getComponent<BoxColliderComponent>("collider");
-    c.isColliding = false;
-    c.collisions = [];
-
-    let {
-      p: [aX, aY],
-      lp: [aXl, aYl],
-    } = a.getComponent<PositionComponent>("position");
-    let { box: aBox, onCollide } = a.getComponent<BoxColliderComponent>("collider");
-
-    for (let j = 0; j < entities.length; j++) {
-      if (i !== j) {
-        const b = entities[j];
-        const {
-          p: [bX, bY],
-          lp: [bXl, bYl],
-        } = b.getComponent<PositionComponent>("position");
-        const bBox = b.getComponent<BoxColliderComponent>("collider").box;
-
-        const actualCollide = isCollide([aX, aY], aBox, [bX, bY], bBox);
-
-        const xCollide = !isCollide([aXl, aY], aBox, [bX, bY], bBox);
-        const yCollide = !isCollide([aX, aYl], aBox, [bX, bY], bBox);
-
-        let tAx = aX;
-        let tAy = aY;
-
-        if (actualCollide && !!onCollide) {
-          // console.log(xCollide, yCollide);
-          let xD = 0;
-          let yD = 0;
-          if (xCollide) {
-            xD = aXl > aX ? 1 : -1;
-          }
-
-          if (yCollide) {
-            yD = aYl > aY ? 1 : -1;
-          }
-
-          c.isColliding = true;
-          c.collisions.push({ e: b, c: [tAx, tAy] });
-
-          onCollide(b, [xD, yD]);
-        }
-      }
-    }
-  }
-};
-
 export const resolveCollisions = (entities: IEntity[]) => {
   const triggers = entities.filter(e => !!e.getComponent<BoxColliderComponent>("collider").onCollide);
   for (let i = 0; i < triggers.length; i++) {
@@ -73,7 +20,6 @@ export const resolveCollisions = (entities: IEntity[]) => {
 
     let {
       p: [aX, aY],
-      lp: [aXl, aYl],
     } = a.getComponent<PositionComponent>("position");
 
     let { box: aBox, onCollide } = a.getComponent<BoxColliderComponent>("collider");
@@ -88,11 +34,10 @@ export const resolveCollisions = (entities: IEntity[]) => {
         const b = entities[j];
         const {
           p: [bX, bY],
-          lp: [bXl, bYl],
         } = b.getComponent<PositionComponent>("position");
         const bBox = b.getComponent<BoxColliderComponent>("collider").box;
 
-        const actualCollide = isCollide([aX, aY], aBox, [bX, bY], bBox);
+        // const actualCollide = isCollide([aX, aY], aBox, [bX, bY], bBox);
 
         const dist = 10;
 

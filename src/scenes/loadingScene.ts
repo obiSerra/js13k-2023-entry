@@ -5,6 +5,7 @@ import { ComponentBaseEntity } from "../lib/entities";
 import { Scene, GameState } from "../lib/gameState";
 import { flipImage, genDrawCharacter, hydrateImage, preRender } from "../lib/rendering";
 import { Stage } from "../lib/stage";
+import { multiplyVecScalar } from "../lib/utils";
 
 const pxImages = [player];
 
@@ -16,14 +17,12 @@ const groundBlock: RenderFn = (ctx, pos) => {
   const h = 32;
 
   ctx.beginPath();
-  ctx.rect(x-w, y-h, w, h);
+  ctx.rect(x - w, y - h, w, h);
   ctx.closePath();
   ctx.fillStyle = "#000";
   ctx.fill();
   ctx.closePath();
 };
-
-export const multiplyVec = (vec: IVec, scalar: number): IVec => vec.map(v => v * scalar) as IVec;
 
 type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 
@@ -47,7 +46,7 @@ class loadingBar extends ComponentBaseEntity {
   loadImages(imageFn: ImgFnMap) {
     const z = 2;
     for (const img of Object.keys(imageFn)) {
-      const pre = preRender(multiplyVec(imageFn[img].d, z), imageFn[img].f);
+      const pre = preRender(multiplyVecScalar(imageFn[img].d, z), imageFn[img].f);
       this.loadedImages[img] = pre;
     }
   }

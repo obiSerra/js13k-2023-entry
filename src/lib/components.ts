@@ -12,44 +12,82 @@ import {
   IVecNullable,
 } from "./contracts";
 import { Sound, noteFrequencies } from "./soundComponent";
-import { mXs } from "./utils";
+import { pXs, sumVec } from "./utils";
+
+export class StaticPositionComponent implements IComponent {
+  type: ComponentType;
+  p: IVec;
+  direction: number;
+  constructor(p: IVec, v: IVec = [0, 0]) {
+    this.type = "position";
+    this.p = p;
+    this.direction = 1;
+  }
+}
 
 export class PositionComponent implements IComponent {
   type: "position";
   p: IVec;
   v: IVec;
-  lp: IVec; // TODO remove
+  a: IVec = [0, 0];
+  maxA = [10, 10];
+  lp: IVec;
+  maxSpeed: IVec;
   maxMove: [t: number | null, r: number | null, b: number | null, l: number | null] = [null, null, null, null];
   direction: number;
-  constructor(p: IVec, v: IVec = [0, 0]) {
+  constructor(p: IVec, v: IVec = [0, 0], maxSpeed: IVec = [200, 200]) {
     this.type = "position";
     this.p = p;
     this.lp = p;
     this.v = v;
     this.direction = 1;
+    this.maxSpeed = maxSpeed;
   }
 
+  accelerate(acc: IVec) {
+    this.a = sumVec(this.a, acc);
+  }
+  stopDir(dir: [boolean, boolean]) {
+    this.a[0] = dir[0] ? 0 : this.a[0];
+    this.a[1] = dir[1] ? 0 : this.a[1];
+  }
   onUpdate(e, delta: number, gameState?: GameStateAPI): void {
-    const [x, y] = this.p;
-    this.lp[0] = this.lp[0] === x ? this.lp[0] : x;
-    this.lp[1] = this.lp[1] === y ? this.lp[1] : y;
+    const maxSpeed = this.maxSpeed;
+    let {
+      p: [x, y],
+      v: [vx, vy],
+      a: [ax, ay],
+    } = this;
+    this.lp[0] = x;
+    this.lp[1] = y;
 
     // Apply movement
-    const [vx, vy] = this.v;
+    vx += ax;
+    vy += ay;
 
-    let mvY = mXs(vy, delta);
-    let mvX = mXs(vx, delta);
+    vx = Math.abs(vx) > maxSpeed[0] ? maxSpeed[0] * Math.sign(vx) : vx;
+    vy = Math.abs(vy) > maxSpeed[1] ? maxSpeed[1] * Math.sign(vy) : vy;
 
-    // console.log(this.maxMove);
-
-    if (this.maxMove[2] !== null && mvY * 2 > this.maxMove[2]) {
-      mvY = this.maxMove[2];
+    const [mxT, mxR, mxB, mxL] = this.maxMove;
+    let mvY = pXs(vy, delta);
+    let mvX = pXs(vx, delta);
+    const lT = (n: null | number, b: number) => n !== null && Math.abs(b) > Math.abs(n);
+    if (mvY > 0 && lT(mxB, mvY)) {
+      mvY = mxB * Math.sign(mvY);
+      vy = 0;
     }
-    if (this.maxMove[1] !== null && mvX * 2 > this.maxMove[1]) {
-      // console.log("max move right", mvX, this.maxMove[1]);
-      mvX = this.maxMove[1];
+
+    if (mvX > 0 && lT(mxR, mvX)) {
+      mvX = mxR * Math.sign(mvX);
+      vx = 0;
+    } else if (lT(mxL, mvX)) {
+      mvX = mxL * Math.sign(mvX);
+      vx = 0;
     }
 
+    this.a = [0, 0];
+
+    this.v = [vx, vy];
     this.p = [x + mvX, y + mvY];
   }
 }
@@ -171,21 +209,24 @@ export class GravityComponent implements IComponent {
   gravity: number;
   ev: number;
   active: true;
-  constructor(gravity: number = 10, ev: number = null) {
+  constructor(gravity: number = 1, ev: number = null) {
     this.type = "gravity";
-    this.gravity = gravity * 10;
+    this.gravity = gravity * 9.8;
     this.ev = !!ev ? ev : gravity * 100;
   }
   onUpdate(e: IEntity, delta: number): void {
-    const pos = (e.components["position"] as PositionComponent).p;
     const box = e.components["collider"] as BoxColliderComponent;
+    const pos = e.getComponent<PositionComponent>("position");
+    const {
+      p: [x, y],
+      v,
+    } = pos;
 
-    const [x, y] = pos;
-    const v = (e.components["position"] as PositionComponent).v;
+    pos.accelerate([0, this.gravity]);
+    // const accV = Math.max(v[1] + mXs(this.gravity, delta), th  is.ev);
 
-    // const accV = Math.max(v[1] + mXs(this.gravity, delta), this.ev);
-    const accV = v[1] + mXs(this.gravity, delta);
-    (e.components["position"] as PositionComponent).v = [v[0], accV];
+    // const accV = v[1] + pXs(this.gravity, delta);
+    // (e.components["position"] as PositionComponent).v = [v[0], accV];
   }
 }
 
