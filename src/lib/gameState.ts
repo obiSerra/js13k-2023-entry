@@ -1,4 +1,4 @@
-import { IEntity, GameStateAPI } from "./contracts";
+import { IEntity, GameStateAPI, IVec } from "./contracts";
 import { GameLoop } from "./gameLoop";
 import { Stage } from "./stage";
 
@@ -8,6 +8,8 @@ export class Scene {
   content: SceneContent;
   _entities: IEntity[] = [];
   endScene: () => void;
+
+  cameraPos: IVec = [0, 0];
 
   constructor(content: SceneContent, endScene: () => void) {
     this.content = content;

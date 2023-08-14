@@ -6,7 +6,7 @@ export type ComponentType = "position" | "control" | "collider" | "render" | "gr
 export interface IComponent {
   type: ComponentType;
   onInit?(e: IEntity): void;
-  onRender?(e: IEntity, delta: number): void;
+  onRender?(e: IEntity, delta: number, c: IVec): void;
   onUpdate?(e: IEntity, delta: number, gameState?: GameStateAPI): void;
   onTerminate?(e: IEntity): void;
 }
@@ -31,7 +31,7 @@ export interface IEntity {
   mass?: number;
   init?(): void;
   destroy?(): void;
-  render?(t: number): void;
+  render?(t: number, c: IVec): void;
   update?(delta: number, gameState?: GameStateAPI): void;
   onUpdateStart?(delta: number, gameState?: GameStateAPI): void;
   onUpdateEnd?(delta: number, gameState?: GameStateAPI): void;

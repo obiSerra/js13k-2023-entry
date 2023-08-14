@@ -80,7 +80,7 @@ export class PositionComponent implements IComponent {
     if (mvX > 0 && lT(mxR, mvX)) {
       mvX = mxR * Math.sign(mvX);
       vx = 0;
-    } else if (lT(mxL, mvX)) {
+    } else if (mvX < 0 && lT(mxL, mvX)) {
       mvX = mxL * Math.sign(mvX);
       vx = 0;
     }
@@ -113,14 +113,14 @@ export class BoxColliderComponent implements IComponent {
   }
 
   // TODO Debug code, remove before release
-  onRender(e: IEntity, delta: number): void {
+  onRender(e: IEntity, delta: number, c: IVec): void {
     const [w, h] = this.box;
     const pos = (e.components["position"] as PositionComponent).p;
     if (!pos) throw new Error("PositionComponent not found");
     const [x, y] = pos;
     const ctx = e.stage.ctx;
     ctx.beginPath();
-    ctx.rect(x, y, w, h);
+    ctx.rect(x + c[0], y + c[1], w, h);
     ctx.strokeStyle = "lime";
     ctx.stroke();
     ctx.closePath();
@@ -151,7 +151,7 @@ export class SpriteRenderComponent implements IComponent {
     this.currentFrame = 0;
     this.currentAnimation = animationName;
   }
-  onRender(e: IEntity, t: number): void {
+  onRender(e: IEntity, t: number, c: IVec): void {
     const pos = (e.components["position"] as PositionComponent).p;
     if (!pos) throw new Error("PositionComponent not found");
     const [x, y] = pos;
@@ -163,20 +163,17 @@ export class SpriteRenderComponent implements IComponent {
       this.currentFrame = (this.currentFrame + 1) % an.frames.length;
     }
     const ctx = this.stage.ctx;
-
     ctx.beginPath();
     ctx.drawImage(
       an.frames[this.currentFrame],
-      x,
-      y,
+      x + c[0],
+      y + c[1],
       an.frames[this.currentFrame].width,
       an.frames[this.currentFrame].height
     );
 
-    ctx.strokeStyle = "red"; // TODO Debug code, remove before release
-    ctx.moveTo(x, y); // TODO Debug code, remove before release
-    ctx.arc(x, y, 2, 0, 2 * Math.PI); // TODO Debug code, remove before release
-    ctx.stroke(); // TODO Debug code, remove before release
+    
+
     ctx.closePath();
   }
 }
@@ -198,9 +195,9 @@ export class ImgRenderComponent implements IComponent {
     this.stage = e.stage;
   }
 
-  onRender(e: IEntity, delta: number): void {
+  onRender(e: IEntity, delta: number, c: IVec): void {
     const pos = (e.components["position"] as PositionComponent).p;
-    this.stage.ctx.drawImage(this.image, pos[0], pos[1]);
+    this.stage.ctx.drawImage(this.image, pos[0] + c[0], pos[1] + c[1]);
   }
 }
 
