@@ -10,12 +10,19 @@ import { testScene } from "./scenes/testScene";
 
 const gameState = new GameState();
 
-gameState.scene = loadingScene(() => {
-  gameState.scene = testScene(() => {
-    console.log("game over");
+const mainScene = () =>
+  testScene(() => {
+    alert("Game over");
+    gameState.scene = mainScene();
+    console.log("Running main scene");
+    gameState.runScene();
   });
+
+gameState.scene = loadingScene(() => {
+  gameState.scene = mainScene();
   console.log("Running main scene");
   gameState.runScene();
 });
-
+mainScene();
+console.log("Running main scene");
 gameState.runScene();

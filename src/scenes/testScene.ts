@@ -9,7 +9,7 @@ import { IEntity, IRenderComponent, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { isInView } from "../lib/utils";
-import { Player, playerSprite } from "../player";
+import { Enemy, Player, enemySprite, playerSprite } from "../player";
 
 class Ground extends ComponentBaseEntity {
   name: string;
@@ -18,7 +18,7 @@ class Ground extends ComponentBaseEntity {
     super(stage, []);
     const position = new StaticPositionComponent(pos);
 
-    const renderer = new ImgRenderComponent(gs.images.groundBlock);
+    const renderer = new ImgRenderComponent(gs.images["static"].groundBlock);
     const box = new BoxColliderComponent([32, 32]);
 
     this.addComponent(position);
@@ -40,19 +40,30 @@ class Ground extends ComponentBaseEntity {
 }
 
 export class MagicBolt extends ComponentBaseEntity {
-  constructor(gs: GameState, pos: IVec, v: IVec) {
+  c: string;
+  constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, v, [600, 600]);
 
-    const renderer = new ImgRenderComponent(gs.images.bolt);
+    this.c = creatorID;
+
+    const renderer = new ImgRenderComponent(gs.images["static"].bolt);
     const box = new BoxColliderComponent(
       [12, 12],
       (b: IEntity, d: any) => {
         if (b.constructor.name === "Ground") {
+          // gs.scene.removeEntity(this);
+          // gs.scene.removeEntity(b);
+          
+        } else if (b.constructor.name === "Enemy" && b.ID !== this.c) {
           gs.scene.removeEntity(this);
           gs.scene.removeEntity(b);
-          // this.destroy();
+          
+        }
+        else if (b.constructor.name === "Player" && b.ID !== this.c) {
+          gs.scene.removeEntity(this);
+          gs.scene.removeEntity(b);
         }
       },
       false
@@ -75,7 +86,7 @@ export const testScene = onEnd => {
   return new Scene((gs: GameState, scene: Scene) => {
     const { gl } = gs;
 
-    const player = new Player(gs, playerSprite(gs.images));
+    const player = new Player(gs, playerSprite(gs.images), onEnd);
 
     scene.addEntity(player);
 
@@ -84,10 +95,10 @@ export const testScene = onEnd => {
     let v = 400;
     for (let i = 3; i < 200; i++) {
       if (i > 20) {
-        if (i % 11 === 0) continue;
-        if (i % 11 === 1) continue;
-        if (i % 11 === 2 && Math.random() < 0.5) continue;
-        if (i % 11 === 3 && Math.random() < 0.5) continue;
+        // if (i % 11 === 0) continue;
+        // if (i % 11 === 1) continue;
+        // if (i % 11 === 2 && Math.random() < 0.5) continue;
+        // if (i % 11 === 3 && Math.random() < 0.5) continue;
       }
       if (i % 50 == 0) v -= 64;
 
@@ -104,6 +115,9 @@ export const testScene = onEnd => {
       // lastBlock = 0;
     }
 
+    const enemy = new Enemy(gs, enemySprite(gs.images));
+    scene.addEntity(enemy);
+
     gl.onUpdate(delta => {
       const [x, y] = player.getComponent<PositionComponent>("position").p;
       const cx = gs.stage.canvas.width / 2 - x;
@@ -111,7 +125,7 @@ export const testScene = onEnd => {
 
       const inView = scene.getEntities().filter(e => isInView(e, [cx, cy], gs.stage.canvas));
 
-      inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta));
+      inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta, gs));
 
       resolveCollisions(inView.filter(e => !!e.components["collider"]));
     });

@@ -35,12 +35,12 @@ export class PositionComponent implements IComponent {
   maxSpeed: IVec;
   collisionSensors: CollisionSensors = [null, null, null, null];
   direction: number;
-  constructor(p: IVec, v: IVec = [0, 0], maxSpeed: IVec = [200, 200]) {
+  constructor(p: IVec, v: IVec = [0, 0], maxSpeed: IVec = [200, 200], direction = 1) {
     this.type = "position";
     this.p = p;
     this.lp = p;
     this.v = v;
-    this.direction = 1;
+    this.direction = direction;
     this.maxSpeed = maxSpeed;
   }
 

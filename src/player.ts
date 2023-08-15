@@ -13,7 +13,18 @@ import { MagicBolt } from "./scenes/testScene";
 
 export const playerSprite: (images: any) => Sprite = images => {
   const { player_stand_1, player_stand_2, player_stand_1_left, player_stand_2_left, player_run_1, player_run_1_left } =
-    images;
+    images["player"];
+  return {
+    idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
+    idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
+    run: { frames: [player_run_1, player_stand_1], changeTime: 150 },
+    runLeft: { frames: [player_run_1_left, player_stand_1_left], changeTime: 150 },
+  };
+};
+
+export const enemySprite: (images: any) => Sprite = images => {
+  const { player_stand_1, player_stand_2, player_stand_1_left, player_stand_2_left, player_run_1, player_run_1_left } =
+    images["enemy"];
   return {
     idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
     idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
@@ -50,7 +61,7 @@ export class PlayerControlComponent extends KeyboardControlComponent {
   }
 }
 
-class Rechargeable {
+export class Rechargeable {
   max: number;
   current: number;
   constructor(max: number, current: number) {
@@ -84,17 +95,20 @@ export class Player extends ComponentBaseEntity {
   onTheGround: number = 0;
   jumpCharged: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(500, 500);
-  constructor(gs: GameState, sprite: Sprite) {
+  onEnd: () => void;
+  constructor(gs: GameState, sprite: Sprite, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2]);
     const renderer = new SpriteRenderComponent(sprite, "idle");
     const control = new PlayerControlComponent();
+
     const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {
       // console.log(b, c);
     });
     const gravity = new GravityComponent();
     this.gs = gs;
+    this.onEnd = onEnd;
 
     this.addComponent(position);
     this.addComponent(renderer);
@@ -164,7 +178,84 @@ export class Player extends ComponentBaseEntity {
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0]);
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
+    this.gs.scene.addEntity(bolt);
+    this.fireCharge.useAll();
+  }
+
+  destroy(): void {
+    super.destroy();
+    this.onEnd();
+  }
+}
+
+export class Enemy extends ComponentBaseEntity {
+  gs: GameState;
+  fireCharge: Rechargeable = new Rechargeable(1500, 0);
+  constructor(gs: GameState, sprite: Sprite) {
+    const { stage } = gs;
+    super(stage, []);
+    const position = new PositionComponent([stage.canvas.width + 50, stage.canvas.height / 2]);
+    const renderer = new SpriteRenderComponent(sprite, "idle");
+    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {
+      // console.log(b, c);
+    });
+    const gravity = new GravityComponent();
+    this.gs = gs;
+
+    this.addComponent(position);
+    this.addComponent(renderer);
+    this.addComponent(box);
+    this.addComponent(gravity);
+  }
+
+  update(delta: number, gs: GameState): void {
+    this.action(delta, gs);
+    this.fireCharge.recharge(delta);
+    const pos = this.components["position"] as PositionComponent;
+    const rend = this.components["render"] as SpriteRenderComponent;
+
+    if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
+    if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
+
+    super.update(delta, gs);
+  }
+
+  action(delta: number, gs: GameState) {
+    const player = gs.scene.getEntities().find(e => e.constructor.name === "Player") as Player;
+    if (!player) return;
+    const [px, py] = player.getComponent<PositionComponent>("position").p;
+    const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
+    const pos = this.getComponent<PositionComponent>("position");
+    const {
+      p: [x, y],
+      direction: d,
+    } = pos;
+    const [w, h] = this.getComponent<BoxColliderComponent>("collider").box;
+
+    const [[cpx, cpy], [cx, cy]] = [
+      [px + pw / 2, py + ph / 2],
+      [x + w / 2, y + h / 2],
+    ];
+
+    const dist = Math.sqrt(Math.pow(cpx - cx, 2) + Math.pow(cpy - cy, 2));
+    const vDist = Math.sqrt(Math.pow(cpy - cy, 2));
+
+    // Turn
+    if (px < x && d !== 1) pos.direction = 1;
+    else if (px > x && d !== -1) pos.direction = -1;
+
+    // Attack - to move
+
+    if (dist < 300 && vDist < 100) this.magicBolt();
+  }
+
+  magicBolt() {
+    if (!this.fireCharge.isFull) return;
+    const pos = this.components["position"] as PositionComponent;
+    const d = pos.direction * -400;
+    const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
     this.fireCharge.useAll();
   }

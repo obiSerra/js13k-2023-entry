@@ -3,11 +3,22 @@ import { HTMLComponent } from "../lib/components";
 import { IVec, ImagePxsRawMap, RenderFn } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { Scene, GameState } from "../lib/gameState";
-import { flipImage, genDrawCharacter, hydrateImage, preRender } from "../lib/rendering";
+import { colorizeImages, flipImage, genDrawCharacter, hydrateImage, preRender } from "../lib/rendering";
 import { Stage } from "../lib/stage";
 import { multiplyVecScalar } from "../lib/utils";
 
-const pxImages = [player];
+const basicEnemyColors = {
+  "#2a2203": "white",
+  "#f9c4b4": "lightgrey",
+  "#1d7ba7": "black",
+  "#c22828": "lightgrey",
+};
+
+// "#2a2203", "#f9c4b4", "#000000", "#0f0c00", "#1d7ba7", "#c22828", "#4a4a4a"
+const pxImages: [string, ImagePxsRawMap][] = [
+  ["player", player],
+  ["enemy", colorizeImages(basicEnemyColors, player)],
+];
 
 const groundBlock: RenderFn = (ctx, pos) => {
   let [x, y] = pos;
@@ -43,7 +54,7 @@ type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 const staticImages: ImgFnMap = { groundBlock: { d: [32, 32], f: groundBlock }, bolt: { d: [12, 12], f: bolt } };
 
 class loadingBar extends ComponentBaseEntity {
-  loadedImages: { [key: string]: HTMLImageElement } = {};
+  loadedImages: { [key: string]: { [key: string]: HTMLImageElement } } = { static: {} };
   constructor(stage: Stage) {
     const loadingEl = new HTMLComponent("#loading");
     super(stage, [loadingEl]);
@@ -57,16 +68,18 @@ class loadingBar extends ComponentBaseEntity {
     this.loadPxImages(pxImages);
     this.loadImages(staticImages);
   }
-  loadImages(imageFn: ImgFnMap) {
+  loadImages(imageFnMap: ImgFnMap) {
     const z = 2;
-    for (const img of Object.keys(imageFn)) {
-      const pre = preRender(multiplyVecScalar(imageFn[img].d, z), imageFn[img].f);
-      this.loadedImages[img] = pre;
+    for (const img of Object.keys(imageFnMap)) {
+      const pre = preRender(multiplyVecScalar(imageFnMap[img].d, z), imageFnMap[img].f);
+      this.loadedImages["static"][img] = pre;
     }
   }
-  loadPxImages(pxImages: ImagePxsRawMap[]) {
+  loadPxImages(pxImages: [string, ImagePxsRawMap][]) {
     const z = 2;
-    for (const pxImage of pxImages) {
+    for (const r of pxImages) {
+      const [name, pxImage] = r;
+
       for (const img of Object.keys(pxImage)) {
         if (img === "colors") continue;
         const imgR = hydrateImage(pxImage, img);
@@ -74,8 +87,9 @@ class loadingBar extends ComponentBaseEntity {
 
         const preR = preRender([imgR.length * z, imgR[0].length * z], genDrawCharacter(imgR, z));
         const preL = preRender([imgR.length * z, imgR[0].length * z], genDrawCharacter(imgL, z));
-        this.loadedImages[img] = preR;
-        this.loadedImages[img + "_left"] = preL;
+        if (!this.loadedImages[name]) this.loadedImages[name] = {};
+        this.loadedImages[name][img] = preR;
+        this.loadedImages[name][img + "_left"] = preL;
       }
     }
   }

@@ -11,7 +11,7 @@ export class Scene {
 
   cameraPos: IVec = [0, 0];
 
-  constructor(content: SceneContent, endScene: () => void) {
+  constructor(content: SceneContent, endScene: () => void = () => {}) {
     this.content = content;
     this.endScene = endScene;
   }
@@ -36,7 +36,7 @@ export class Scene {
 export class GameState {
   stage: Stage;
   gl: GameLoop;
-  images: { [key: string]: HTMLImageElement } = {};
+  images: { [key: string]: { [key: string]: HTMLImageElement } } = {};
 
   scene: Scene | null = null;
 

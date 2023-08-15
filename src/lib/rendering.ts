@@ -44,3 +44,14 @@ export function deepCopy<Type>(arg: Type): Type {
   return JSON.parse(JSON.stringify(arg));
 }
 export const flipImage = (image: ImagePxs): ImagePxs => deepCopy(image).map(row => row.reverse());
+
+export const colorizeImages = (newColors: { [k: string]: string }, original: ImagePxsRawMap) => {
+  const copy = JSON.parse(JSON.stringify(original));
+
+  copy.colors = copy.colors.map((c, i) => {
+    if (c in newColors) return newColors[c];
+    else return c;
+  });
+
+  return copy;
+};
