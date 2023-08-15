@@ -1,5 +1,5 @@
 import { BoxColliderComponent, PositionComponent } from "./components";
-import { IEntity, IVec } from "./contracts";
+import { CollisionSensor, IEntity, IVec } from "./contracts";
 
 export const isCollide = (a: IVec, as: IVec, b: IVec, bs: IVec) => {
   const [ax, ay] = a;
@@ -23,15 +23,17 @@ export const resolveCollisions = (entities: IEntity[]) => {
     } = a.getComponent<PositionComponent>("position");
 
     let { box: aBox, onCollide } = a.getComponent<BoxColliderComponent>("collider");
+    a.getComponent<PositionComponent>("position").collisionSensors = [null, null, null, null];
 
-    let btmCollide: number | null = null;
-    let tpCollide: number | null = null;
-    let leftCollide: number | null = null;
-    let rightCollide: number | null = null;
+    let btmCollide: CollisionSensor | null = null;
+    let tpCollide: CollisionSensor | null = null;
+    let leftCollide: CollisionSensor | null = null;
+    let rightCollide: CollisionSensor | null = null;
 
     for (let j = 0; j < entities.length; j++) {
       if (i !== j) {
         const b = entities[j];
+        const t = b.constructor.name;
         const {
           p: [bX, bY],
         } = b.getComponent<PositionComponent>("position");
@@ -44,35 +46,68 @@ export const resolveCollisions = (entities: IEntity[]) => {
         // Collide bottom
         for (let i = 0; i < dist; i++) {
           if (isCollide([aX, aY + aBox[1] + i], [aBox[0], 1], [bX, bY], bBox)) {
-            btmCollide = Math.max(i, btmCollide || 0);
-            break;
+            if (i === 0) onCollide(b, "bottom");
+
+            if (i < (btmCollide?.d || Infinity)) {
+              if (btmCollide === null) btmCollide = { d: 0, t: "" };
+              btmCollide.d = i;
+              btmCollide.t = t;
+              break;
+            }
           }
         }
         // Collide top
         for (let i = 0; i < dist; i++) {
           if (isCollide([aX, aY - i], [aBox[0], 1], [bX, bY], bBox)) {
-            tpCollide = Math.min(-i, tpCollide || 0);
-            break;
+            if (i === 0) onCollide(b, "top");
+            if (-i < (tpCollide?.d || 0)) {
+              if (tpCollide === null) tpCollide = { d: 0, t: "" };
+              tpCollide.d = i;
+              tpCollide.t = t;
+              break;
+            }
           }
         }
 
         //collide right
         for (let i = 0; i < dist; i++) {
           if (isCollide([aX + aBox[0] + i, aY], [1, aBox[1]], [bX, bY], bBox)) {
-            rightCollide = Math.max(i, rightCollide || 0);
+            if (i === 0) onCollide(b, "right");
+
+            if (i < (rightCollide?.d || Infinity)) {
+              if (rightCollide === null) rightCollide = { d: 0, t: "" };
+              rightCollide.d = i;
+              rightCollide.t = t;
+              break;
+            }
             break;
           }
         }
         //collide left
         for (let i = 0; i < dist; i++) {
           if (isCollide([aX - i, aY], [1, aBox[1]], [bX, bY], bBox)) {
-            leftCollide = Math.min(-i, leftCollide || 0);
-            break;
+            if (i === 0) onCollide(b, "left");
+            if (i < (leftCollide?.d || Infinity)) {
+              if (leftCollide === null) leftCollide = { d: 0, t: "" };
+              leftCollide.d = i;
+              leftCollide.t = t;
+              break;
+            }
           }
         }
 
-        a.getComponent<PositionComponent>("position").maxMove = [tpCollide, rightCollide, btmCollide, leftCollide];
+        // if (btmCollide?.d === 0) {
+        //   onCollide(b, "bottom");
+        // }
+        // if (tpCollide?.d === 0) {
+        //   onCollide(b, "top");
+        // }
+
+        // if (leftCollide?.d === 0) {
+        //   onCollide(b, "left");
+        // }
       }
     }
+    a.getComponent<PositionComponent>("position").collisionSensors = [tpCollide, rightCollide, btmCollide, leftCollide];
   }
 };

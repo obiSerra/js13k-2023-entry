@@ -1,4 +1,4 @@
-import { IEntity, GameStateAPI, IVec } from "./contracts";
+import { IEntity, IVec } from "./contracts";
 import { GameLoop } from "./gameLoop";
 import { Stage } from "./stage";
 
@@ -25,7 +25,7 @@ export class Scene {
     this._entities[e.ID].init();
   }
   removeEntity(e: IEntity) {
-    this._entities[e.ID].destroy();
+    this._entities[e.ID]?.destroy();
     delete this._entities[e.ID];
   }
   getEntities() {

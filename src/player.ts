@@ -1,15 +1,29 @@
 import {
+  BoxColliderComponent,
+  GravityComponent,
   KeyboardControlComponent,
   PositionComponent,
   SpriteRenderComponent,
-  BoxColliderComponent,
-  GravityComponent,
 } from "./lib/components";
-import { IEntity, GameStateAPI, IStage, Sprite } from "./lib/contracts";
+import { IEntity, IStage, IVec, Sprite } from "./lib/contracts";
 import { ComponentBaseEntity } from "./lib/entities";
+import { GameState, Scene } from "./lib/gameState";
+import { pXs } from "./lib/utils";
+import { MagicBolt } from "./scenes/testScene";
+
+export const playerSprite: (images: any) => Sprite = images => {
+  const { player_stand_1, player_stand_2, player_stand_1_left, player_stand_2_left, player_run_1, player_run_1_left } =
+    images;
+  return {
+    idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
+    idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
+    run: { frames: [player_run_1, player_stand_1], changeTime: 150 },
+    runLeft: { frames: [player_run_1_left, player_stand_1_left], changeTime: 150 },
+  };
+};
 
 export class PlayerControlComponent extends KeyboardControlComponent {
-  onUpdate(e: IEntity, delta: number, gameState?: GameStateAPI): void {
+  onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
     const player = e as Player;
 
     this.downButtons = new Set([...this.downButtons, ...this.clickedDown].filter(x => !this.clickedUp.has(x)));
@@ -26,6 +40,9 @@ export class PlayerControlComponent extends KeyboardControlComponent {
       player.jump();
     }
 
+    if (this.downButtons.has(" ")) {
+      player.magicBolt();
+    }
     if (none) player.stand();
 
     this.clickedDown.clear();
@@ -33,7 +50,32 @@ export class PlayerControlComponent extends KeyboardControlComponent {
   }
 }
 
+class Rechargeable {
+  max: number;
+  current: number;
+  constructor(max: number, current: number) {
+    this.max = max;
+    this.current = current;
+  }
+  recharge(delta: number) {
+    this.current = Math.min(this.current + delta, this.max);
+  }
+  use(delta: number) {
+    this.current = Math.max(this.current - delta, 0);
+  }
+  useAll() {
+    this.current = 0;
+  }
+  get isFull() {
+    return this.current >= this.max;
+  }
+  get isEmpty() {
+    return this.current < this.max;
+  }
+}
+
 export class Player extends ComponentBaseEntity {
+  gs: GameState;
   speed: number = 100;
   jumpSpeed: number = -300;
   jumpTicks: number = 0;
@@ -41,13 +83,18 @@ export class Player extends ComponentBaseEntity {
   jumpCharge: number = 200;
   onTheGround: number = 0;
   jumpCharged: boolean = false;
-  constructor(stage: IStage, sprite: Sprite) {
+  fireCharge: Rechargeable = new Rechargeable(500, 500);
+  constructor(gs: GameState, sprite: Sprite) {
+    const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2]);
     const renderer = new SpriteRenderComponent(sprite, "idle");
     const control = new PlayerControlComponent();
-    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {});
+    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {
+      // console.log(b, c);
+    });
     const gravity = new GravityComponent();
+    this.gs = gs;
 
     this.addComponent(position);
     this.addComponent(renderer);
@@ -56,9 +103,10 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(gravity);
   }
 
-  update(delta: number, gameState?: GameStateAPI): void {
+  update(delta: number, gameState?: GameState): void {
+    this.fireCharge.recharge(delta);
     const pos = this.getComponent<PositionComponent>("position");
-    if (pos.maxMove[2] === 0) {
+    if (pos.collisionSensors[2]?.d === 0) {
       this.onTheGround += delta;
     } else {
       this.onTheGround = 0;
@@ -109,5 +157,15 @@ export class Player extends ComponentBaseEntity {
       pos.v = [0, pos.v[1]];
       pos.a = [0, pos.a[1]];
     }
+  }
+
+  magicBolt() {
+    if (!this.fireCharge.isFull) return;
+    const pos = this.components["position"] as PositionComponent;
+    const d = pos.direction * -400;
+    const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0]);
+    this.gs.scene.addEntity(bolt);
+    this.fireCharge.useAll();
   }
 }

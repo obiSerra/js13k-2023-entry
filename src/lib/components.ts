@@ -1,16 +1,16 @@
 import {
   IComponent,
   IVec,
-  GameStateAPI,
   IEntity,
   ComponentType,
   Sprite,
   IStage,
   Note,
   NodeDataFixed,
-  CollisionDirection,
   IVecNullable,
+  CollisionSensors,
 } from "./contracts";
+import { GameState } from "./gameState";
 import { Sound, noteFrequencies } from "./soundComponent";
 import { pXs, sumVec } from "./utils";
 
@@ -33,7 +33,7 @@ export class PositionComponent implements IComponent {
   maxA = [10, 10];
   lp: IVec;
   maxSpeed: IVec;
-  maxMove: [t: number | null, r: number | null, b: number | null, l: number | null] = [null, null, null, null];
+  collisionSensors: CollisionSensors = [null, null, null, null];
   direction: number;
   constructor(p: IVec, v: IVec = [0, 0], maxSpeed: IVec = [200, 200]) {
     this.type = "position";
@@ -51,7 +51,9 @@ export class PositionComponent implements IComponent {
     this.a[0] = dir[0] ? 0 : this.a[0];
     this.a[1] = dir[1] ? 0 : this.a[1];
   }
-  onUpdate(e, delta: number, gameState?: GameStateAPI): void {
+  onUpdate(e: IEntity, delta: number, gs?: GameState): void {
+    const { solid, onCollide } = e.getComponent<BoxColliderComponent>("collider");
+
     const maxSpeed = this.maxSpeed;
     let {
       p: [x, y],
@@ -68,21 +70,31 @@ export class PositionComponent implements IComponent {
     vx = Math.abs(vx) > maxSpeed[0] ? maxSpeed[0] * Math.sign(vx) : vx;
     vy = Math.abs(vy) > maxSpeed[1] ? maxSpeed[1] * Math.sign(vy) : vy;
 
-    const [mxT, mxR, mxB, mxL] = this.maxMove;
+    const [a, b, c, d] = this.collisionSensors;
+    const def = { d: null };
+    const [{ d: mxT }, { d: mxR }, { d: mxB }, { d: mxL }] = [a ?? def, b ?? def, c ?? def, d ?? def];
+
     let mvY = pXs(vy, delta);
     let mvX = pXs(vx, delta);
-    const lT = (n: null | number, b: number) => n !== null && Math.abs(b) > Math.abs(n);
-    if (mvY > 0 && lT(mxB, mvY)) {
-      mvY = mxB * Math.sign(mvY);
-      vy = 0;
-    }
 
-    if (mvX > 0 && lT(mxR, mvX)) {
-      mvX = mxR * Math.sign(mvX);
-      vx = 0;
-    } else if (mvX < 0 && lT(mxL, mvX)) {
-      mvX = mxL * Math.sign(mvX);
-      vx = 0;
+    const lT = (n: null | number, b: number) => n !== null && Math.abs(b) > Math.abs(n);
+
+    if (solid) {
+      if (mvY > 0 && lT(mxB, mvY)) {
+        mvY = mxB * Math.sign(mvY);
+        vy = 0;
+      } else if (mvY < 0 && lT(mxT, mvY)) {
+        mvY = mxT * Math.sign(mvY);
+        vy = 0;
+      }
+
+      if (mvX > 0 && lT(mxR, mvX)) {
+        mvX = mxR * Math.sign(mvX);
+        vx = 0;
+      } else if (mvX < 0 && lT(mxL, mvX)) {
+        mvX = mxL * Math.sign(mvX);
+        vx = 0;
+      }
     }
 
     this.a = [0, 0];
@@ -96,17 +108,19 @@ export class BoxColliderComponent implements IComponent {
   type: "collider";
   box: IVec;
   trigger: boolean;
-  onCollide?: (e: IEntity, c: CollisionDirection) => void;
-  onCollideFn?: (e: IEntity, c: CollisionDirection) => void;
+  onCollide?: (e: IEntity, c: any) => void;
+  onCollideFn?: (e: IEntity, c: any) => void;
   isColliding: boolean;
-  collisions: { e: IEntity; c: CollisionDirection }[] = [];
+  collisions: { e: IEntity; c: CollisionSensors }[] = [];
+  solid: boolean = true;
 
-  constructor(box: IVec, onCollide?: (e: IEntity, b: CollisionDirection) => void) {
+  constructor(box: IVec, onCollide?: (e: IEntity, b: CollisionSensors) => void, solid: boolean = true) {
     this.type = "collider";
     this.box = box;
     this.trigger = true;
     this.onCollideFn = onCollide;
     this.isColliding = false;
+    this.solid = solid;
   }
   onInit(e: IEntity): void {
     this.onCollide = this.onCollideFn?.bind(e) || null;
@@ -171,8 +185,6 @@ export class SpriteRenderComponent implements IComponent {
       an.frames[this.currentFrame].width,
       an.frames[this.currentFrame].height
     );
-
-    
 
     ctx.closePath();
   }

@@ -24,9 +24,23 @@ const groundBlock: RenderFn = (ctx, pos) => {
   ctx.closePath();
 };
 
+const bolt: RenderFn = (ctx, pos) => {
+  let [x, y] = pos;
+  x = Math.round(x);
+  y = Math.round(y);
+  const w = 6;
+
+  ctx.beginPath();
+  ctx.arc(x - w, y - w, w, 0, 2 * Math.PI);
+  ctx.closePath();
+  ctx.fillStyle = "red";
+  ctx.fill();
+  ctx.closePath();
+};
+
 type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 
-const staticImages: ImgFnMap = { groundBlock: { d: [32, 32], f: groundBlock } };
+const staticImages: ImgFnMap = { groundBlock: { d: [32, 32], f: groundBlock }, bolt: { d: [12, 12], f: bolt } };
 
 class loadingBar extends ComponentBaseEntity {
   loadedImages: { [key: string]: HTMLImageElement } = {};

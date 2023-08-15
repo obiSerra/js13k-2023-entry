@@ -1,3 +1,5 @@
+import { GameState } from "./gameState";
+
 export type IVec = [number, number];
 export type IVecNullable = [number | null, number | null];
 
@@ -7,7 +9,7 @@ export interface IComponent {
   type: ComponentType;
   onInit?(e: IEntity): void;
   onRender?(e: IEntity, delta: number, c: IVec): void;
-  onUpdate?(e: IEntity, delta: number, gameState?: GameStateAPI): void;
+  onUpdate?(e: IEntity, delta: number, gs?: GameState): void;
   onTerminate?(e: IEntity): void;
 }
 
@@ -32,10 +34,10 @@ export interface IEntity {
   init?(): void;
   destroy?(): void;
   render?(t: number, c: IVec): void;
-  update?(delta: number, gameState?: GameStateAPI): void;
-  onUpdateStart?(delta: number, gameState?: GameStateAPI): void;
-  onUpdateEnd?(delta: number, gameState?: GameStateAPI): void;
-  onCollide(e: IEntity, c: CollisionDirection): void;
+  update?(delta: number, gs?: GameState): void;
+  onUpdateStart?(delta: number, gs?: GameState): void;
+  onUpdateEnd?(delta: number, gs?: GameState): void;
+  onCollide(e: IEntity, c: CollisionSensors): void;
   initComponent?(c: string): void;
   componentList?(): IComponent[];
   addComponent?(c: IComponent): void;
@@ -64,19 +66,6 @@ export type SpriteAnimator = {
   currentFrame: number;
   direction: number;
   currentSprite: string;
-};
-
-export type IGameState = {
-  status: string;
-  entities: IEntity[];
-  stage: IStage;
-};
-
-export type GameStateAPI = {
-  addEntity(e: IEntity): void;
-  removeEntity(e: IEntity): void;
-  getEntities(): IEntity[];
-  getStage(): IStage;
 };
 
 export type ColorMap = { colors: (string | null)[] };
@@ -114,5 +103,7 @@ export type MusicSheet = NodeDataFixed[];
 
 export type NoteFrequencies = { [k: string]: number };
 
-// export type CollisionDirection = { [keyof: string]: boolean };
-export type CollisionDirection = any;
+export type CollisionSensor = { d: number; t: any };
+
+export type CollisionSensors = [CollisionSensor | null, CollisionSensor | null, CollisionSensor | null, CollisionSensor | null];
+

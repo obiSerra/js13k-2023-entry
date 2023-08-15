@@ -1,4 +1,5 @@
-import { GameStateAPI, IComponent, IEntity, IStage, IVec } from "./contracts";
+import { IComponent, IEntity, IStage, IVec } from "./contracts";
+import { GameState } from "./gameState";
 
 export class ComponentBaseEntity implements IEntity {
   ID: string;
@@ -34,9 +35,9 @@ export class ComponentBaseEntity implements IEntity {
       if (c.onRender) c.onRender(this, t, ca);
     });
   }
-  onUpdateStart?(delta: number, gameState?: GameStateAPI): void {}
-  onUpdateEnd?(delta: number, gameState?: GameStateAPI): void {}
-  update?(delta: number, gameState?: GameStateAPI): void {
+  onUpdateStart?(delta: number, gs: GameState): void {}
+  onUpdateEnd?(delta: number, gs?: GameState): void {}
+  update?(delta: number, gameState?: GameState): void {
     this?.onUpdateStart(delta, gameState);
     this.componentList().forEach(c => {
       if (c.onUpdate) c.onUpdate(this, delta, gameState);

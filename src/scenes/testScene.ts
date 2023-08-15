@@ -8,7 +8,8 @@ import {
 import { IEntity, IRenderComponent, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
-import { Player } from "../player";
+import { isInView } from "../lib/utils";
+import { Player, playerSprite } from "../player";
 
 class Ground extends ComponentBaseEntity {
   name: string;
@@ -38,35 +39,43 @@ class Ground extends ComponentBaseEntity {
   }
 }
 
-const isInView = (e: IEntity, c: IVec, canvas: HTMLCanvasElement) => {
-  const [cx, cy] = c;
-  const p = e.getComponent<PositionComponent>("position").p;
-  const iP = [p[0] + cx, p[1] + cy];
-  const border = 100;
-  const { width, height } = canvas;
-  if (iP[0] < -border || iP[0] > width + border || iP[1] < -border || iP[1] > height + border) return false;
-  return true;
-};
+export class MagicBolt extends ComponentBaseEntity {
+  constructor(gs: GameState, pos: IVec, v: IVec) {
+    const { stage } = gs;
+    super(stage, []);
+    const position = new PositionComponent(pos, v, [600, 600]);
+
+    const renderer = new ImgRenderComponent(gs.images.bolt);
+    const box = new BoxColliderComponent(
+      [12, 12],
+      (b: IEntity, d: any) => {
+        if (b.constructor.name === "Ground") {
+          gs.scene.removeEntity(this);
+          gs.scene.removeEntity(b);
+          // this.destroy();
+        }
+      },
+      false
+    );
+
+    this.addComponent(position);
+    this.addComponent(renderer);
+    this.addComponent(box);
+  }
+
+  update(delta: number, gs: GameState): void {
+    const pos = this.getComponent<PositionComponent>("position");
+    // pos.maxMove[2]
+
+    super.update(delta, gs);
+  }
+}
 
 export const testScene = onEnd => {
   return new Scene((gs: GameState, scene: Scene) => {
     const { gl } = gs;
-    const {
-      player_stand_1,
-      player_stand_2,
-      player_stand_1_left,
-      player_stand_2_left,
-      player_run_1,
-      player_run_1_left,
-    } = gs.images;
-    const playerSprite: Sprite = {
-      idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
-      idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
-      run: { frames: [player_run_1, player_stand_1], changeTime: 150 },
-      runLeft: { frames: [player_run_1_left, player_stand_1_left], changeTime: 150 },
-    };
 
-    const player = new Player(gs.stage, playerSprite);
+    const player = new Player(gs, playerSprite(gs.images));
 
     scene.addEntity(player);
 
