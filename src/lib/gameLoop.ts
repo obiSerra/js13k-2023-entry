@@ -8,7 +8,7 @@ export const RUNNING_ST = "running";
 export const PAUSED_ST = "paused";
 
 export class GameLoop {
-  uFps = 1000 / 30;
+  uFps = 1000 / 60;
 
   debugInfo: HTMLElement;
   stage: IStage;
@@ -118,8 +118,8 @@ export class GameLoop {
   }
   mainLoop() {
     this.lastUpdateCall = +new Date();
-    this.monoLoop();
-    
+    this.updateLoop();
+    this.renderLoop();
   }
 
   renderDebug() {

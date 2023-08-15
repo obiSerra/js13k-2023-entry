@@ -10,7 +10,7 @@ export const isInView = (e: IEntity, c: IVec, canvas: HTMLCanvasElement) => {
   const [cx, cy] = c;
   const p = e.getComponent<PositionComponent>("position").p;
   const iP = [p[0] + cx, p[1] + cy];
-  const border = 100;
+  const border = 200;
   const { width, height } = canvas;
   if (iP[0] < -border || iP[0] > width + border || iP[1] < -border || iP[1] > height + border) return false;
   return true;

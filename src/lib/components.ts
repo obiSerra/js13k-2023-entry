@@ -107,6 +107,8 @@ export class PositionComponent implements IComponent {
 export class BoxColliderComponent implements IComponent {
   type: "collider";
   box: IVec;
+  boxPos: IVec;
+  posModifiers: IVec = [0, 0];
   trigger: boolean;
   onCollide?: (e: IEntity, c: any) => void;
   onCollideFn?: (e: IEntity, c: any) => void;
@@ -114,24 +116,28 @@ export class BoxColliderComponent implements IComponent {
   collisions: { e: IEntity; c: CollisionSensors }[] = [];
   solid: boolean = true;
 
-  constructor(box: IVec, onCollide?: (e: IEntity, b: CollisionSensors) => void, solid: boolean = true) {
+  constructor(box: IVec, onCollide?: (e: IEntity, b: CollisionSensors) => void) {
     this.type = "collider";
     this.box = box;
     this.trigger = true;
     this.onCollideFn = onCollide;
     this.isColliding = false;
-    this.solid = solid;
   }
   onInit(e: IEntity): void {
     this.onCollide = this.onCollideFn?.bind(e) || null;
+    this.boxPos = e.getComponent<PositionComponent>("position").p;
+  }
+
+  onUpdate(e: IEntity, delta: number, gs?: GameState): void {
+    const [x, y] = e.getComponent<PositionComponent>("position").p;
+    this.boxPos = [x + this.posModifiers[0], y + this.posModifiers[1]];
   }
 
   // TODO Debug code, remove before release
   onRender(e: IEntity, delta: number, c: IVec): void {
     const [w, h] = this.box;
-    const pos = (e.components["position"] as PositionComponent).p;
-    if (!pos) throw new Error("PositionComponent not found");
-    const [x, y] = pos;
+
+    const [x, y] = this.boxPos;
     const ctx = e.stage.ctx;
     ctx.beginPath();
     ctx.rect(x + c[0], y + c[1], w, h);
@@ -145,6 +151,7 @@ export class SpriteRenderComponent implements IComponent {
   type: ComponentType;
   sprite: Sprite;
 
+  imgPos: IVec = [0, 0];
   stage: IStage;
   time: number;
   currentFrame: number;
@@ -180,8 +187,8 @@ export class SpriteRenderComponent implements IComponent {
     ctx.beginPath();
     ctx.drawImage(
       an.frames[this.currentFrame],
-      x + c[0],
-      y + c[1],
+      x + c[0] + this.imgPos[0],
+      y + c[1] + this.imgPos[1],
       an.frames[this.currentFrame].width,
       an.frames[this.currentFrame].height
     );

@@ -9,7 +9,7 @@ import { IEntity, IRenderComponent, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { isInView } from "../lib/utils";
-import { Enemy, Player, enemySprite, playerSprite } from "../player";
+import { Enemy, Player, enemySprite, playerSprite } from "../entities/player";
 
 class Ground extends ComponentBaseEntity {
   name: string;
@@ -36,49 +36,6 @@ class Ground extends ComponentBaseEntity {
     ctx.fillStyle = "white";
     ctx.fillText(this.name, x + c[0], y + c[1] + 20);
     ctx.closePath();
-  }
-}
-
-export class MagicBolt extends ComponentBaseEntity {
-  c: string;
-  constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string) {
-    const { stage } = gs;
-    super(stage, []);
-    const position = new PositionComponent(pos, v, [600, 600]);
-
-    this.c = creatorID;
-
-    const renderer = new ImgRenderComponent(gs.images["static"].bolt);
-    const box = new BoxColliderComponent(
-      [12, 12],
-      (b: IEntity, d: any) => {
-        if (b.constructor.name === "Ground") {
-          // gs.scene.removeEntity(this);
-          // gs.scene.removeEntity(b);
-          
-        } else if (b.constructor.name === "Enemy" && b.ID !== this.c) {
-          gs.scene.removeEntity(this);
-          gs.scene.removeEntity(b);
-          
-        }
-        else if (b.constructor.name === "Player" && b.ID !== this.c) {
-          gs.scene.removeEntity(this);
-          gs.scene.removeEntity(b);
-        }
-      },
-      false
-    );
-
-    this.addComponent(position);
-    this.addComponent(renderer);
-    this.addComponent(box);
-  }
-
-  update(delta: number, gs: GameState): void {
-    const pos = this.getComponent<PositionComponent>("position");
-    // pos.maxMove[2]
-
-    super.update(delta, gs);
   }
 }
 

@@ -19,10 +19,10 @@ export const resolveCollisions = (entities: IEntity[]) => {
     c.collisions = [];
 
     let {
-      p: [aX, aY],
-    } = a.getComponent<PositionComponent>("position");
-
-    let { box: aBox, onCollide } = a.getComponent<BoxColliderComponent>("collider");
+      box: aBox,
+      onCollide,
+      boxPos: [aX, aY],
+    } = a.getComponent<BoxColliderComponent>("collider");
     a.getComponent<PositionComponent>("position").collisionSensors = [null, null, null, null];
 
     let btmCollide: CollisionSensor | null = null;
@@ -31,13 +31,14 @@ export const resolveCollisions = (entities: IEntity[]) => {
     let rightCollide: CollisionSensor | null = null;
 
     for (let j = 0; j < entities.length; j++) {
-      if (i !== j) {
-        const b = entities[j];
+      const b = entities[j];
+      if (b.ID !== a.ID) {
         const t = b.constructor.name;
+
         const {
-          p: [bX, bY],
-        } = b.getComponent<PositionComponent>("position");
-        const bBox = b.getComponent<BoxColliderComponent>("collider").box;
+          box: bBox,
+          boxPos: [bX, bY],
+        } = b.getComponent<BoxColliderComponent>("collider");
 
         // const actualCollide = isCollide([aX, aY], aBox, [bX, bY], bBox);
 
@@ -86,7 +87,9 @@ export const resolveCollisions = (entities: IEntity[]) => {
         //collide left
         for (let i = 0; i < dist; i++) {
           if (isCollide([aX - i, aY], [1, aBox[1]], [bX, bY], bBox)) {
-            if (i === 0) onCollide(b, "left");
+            if (i === 0) {
+              onCollide(b, "left");
+            }
             if (i < (leftCollide?.d || Infinity)) {
               if (leftCollide === null) leftCollide = { d: 0, t: "" };
               leftCollide.d = i;

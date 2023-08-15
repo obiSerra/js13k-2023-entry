@@ -1,30 +1,45 @@
+import { MagicBolt } from "./bolt";
 import {
   BoxColliderComponent,
   GravityComponent,
   KeyboardControlComponent,
   PositionComponent,
   SpriteRenderComponent,
-} from "./lib/components";
-import { IEntity, IStage, IVec, Sprite } from "./lib/contracts";
-import { ComponentBaseEntity } from "./lib/entities";
-import { GameState, Scene } from "./lib/gameState";
-import { pXs } from "./lib/utils";
-import { MagicBolt } from "./scenes/testScene";
+} from "../lib/components";
+import { IEntity, IStage, IVec, Sprite } from "../lib/contracts";
+import { ComponentBaseEntity } from "../lib/entities";
+import { GameState, Scene } from "../lib/gameState";
+import { pXs } from "../lib/utils";
 
 export const playerSprite: (images: any) => Sprite = images => {
-  const { player_stand_1, player_stand_2, player_stand_1_left, player_stand_2_left, player_run_1, player_run_1_left } =
-    images["player"];
+  const {
+    player_stand_1,
+    player_stand_2,
+    player_stand_1_left,
+    player_stand_2_left,
+    player_run_1,
+    player_run_1_left,
+    duck,
+  } = images["player"];
   return {
     idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
     idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
     run: { frames: [player_run_1, player_stand_1], changeTime: 150 },
     runLeft: { frames: [player_run_1_left, player_stand_1_left], changeTime: 150 },
+    duck: { frames: [duck], changeTime: 500 },
   };
 };
 
 export const enemySprite: (images: any) => Sprite = images => {
-  const { player_stand_1, player_stand_2, player_stand_1_left, player_stand_2_left, player_run_1, player_run_1_left } =
-    images["enemy"];
+  const {
+    player_stand_1,
+    player_stand_2,
+    player_stand_1_left,
+    player_stand_2_left,
+    player_run_1,
+    player_run_1_left,
+    duck,
+  } = images["enemy"];
   return {
     idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
     idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
@@ -49,6 +64,13 @@ export class PlayerControlComponent extends KeyboardControlComponent {
 
     if (this.downButtons.has("ArrowUp")) {
       player.jump();
+    }
+
+    if (this.downButtons.has("ArrowDown")) {
+      none = false;
+      player.duck();
+    } else {
+      player._resetBox();
     }
 
     if (this.downButtons.has(" ")) {
@@ -95,6 +117,7 @@ export class Player extends ComponentBaseEntity {
   onTheGround: number = 0;
   jumpCharged: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(500, 500);
+  ducking: boolean = false;
   onEnd: () => void;
   constructor(gs: GameState, sprite: Sprite, onEnd: () => void) {
     const { stage } = gs;
@@ -103,9 +126,10 @@ export class Player extends ComponentBaseEntity {
     const renderer = new SpriteRenderComponent(sprite, "idle");
     const control = new PlayerControlComponent();
 
-    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {
+    const box = new BoxColliderComponent([36, 48], (b: IEntity, c: any) => {
       // console.log(b, c);
     });
+    box.posModifiers = [8, 0];
     const gravity = new GravityComponent();
     this.gs = gs;
     this.onEnd = onEnd;
@@ -135,6 +159,12 @@ export class Player extends ComponentBaseEntity {
     }
 
     super.update(delta, gameState);
+  }
+  _resetBox() {
+    this.getComponent<BoxColliderComponent>("collider").box = [36, 48];
+    this.getComponent<BoxColliderComponent>("collider").posModifiers = [8, 0];
+    this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 0];
+    this.ducking = false;
   }
   walkLeft(d: number) {
     const pos = this.components["position"] as PositionComponent;
@@ -170,6 +200,18 @@ export class Player extends ComponentBaseEntity {
     if (this.onTheGround > 0) {
       pos.v = [0, pos.v[1]];
       pos.a = [0, pos.a[1]];
+    }
+  }
+  duck() {
+    const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.components["render"] as SpriteRenderComponent;
+    if (rend.currentAnimation !== "duck") rend.setupAnimation("duck");
+    if (!this.ducking) {
+      // this.getComponent<PositionComponent>("position").p = [pos.p[0], pos.p[1] + 4];
+      this.getComponent<BoxColliderComponent>("collider").box = [36, 20];
+      this.getComponent<BoxColliderComponent>("collider").posModifiers = [0, 28];
+      this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 8];
+      this.ducking = true;
     }
   }
 
