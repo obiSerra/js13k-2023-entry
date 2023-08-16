@@ -10,6 +10,7 @@ import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { isInView } from "../lib/utils";
 import { Enemy, Player, enemySprite, playerSprite } from "../entities/player";
+// import { LifeBar } from "../entities/life";
 
 class Ground extends ComponentBaseEntity {
   name: string;
@@ -47,10 +48,12 @@ export const testScene = onEnd => {
 
     scene.addEntity(player);
 
+    // scene.addEntity(new LifeBar(gs.stage));
+
     // Generate map
     let cnt = 0;
     let v = 400;
-    for (let i = 3; i < 200; i++) {
+    for (let i = 3; i < 1000; i++) {
       if (i > 20) {
         // if (i % 11 === 0) continue;
         // if (i % 11 === 1) continue;
@@ -69,11 +72,12 @@ export const testScene = onEnd => {
       }
       scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
       cnt++;
+
+      if (i > 50 && i % 17 === 0) {
+        scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64]));
+      }
       // lastBlock = 0;
     }
-
-    const enemy = new Enemy(gs, enemySprite(gs.images));
-    scene.addEntity(enemy);
 
     gl.onUpdate(delta => {
       const [x, y] = player.getComponent<PositionComponent>("position").p;

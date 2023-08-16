@@ -1,10 +1,13 @@
+import { player } from "../assets/pxImages";
 import { PositionComponent, ImgRenderComponent, BoxColliderComponent } from "../lib/components";
 import { IVec, IEntity } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
+import { Player } from "./player";
 
 export class MagicBolt extends ComponentBaseEntity {
   c: string;
+  h: string | null = null;
   constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string) {
     const { stage } = gs;
     super(stage, []);
@@ -14,7 +17,6 @@ export class MagicBolt extends ComponentBaseEntity {
 
     const renderer = new ImgRenderComponent(gs.images["static"].bolt);
     const box = new BoxColliderComponent([8, 8], (b: IEntity, d: any) => {
-    
       if (b.constructor.name === "Ground") {
         gs.scene.removeEntity(this);
         // gs.scene.removeEntity(b);
@@ -22,10 +24,12 @@ export class MagicBolt extends ComponentBaseEntity {
         gs.scene.removeEntity(this);
         gs.scene.removeEntity(b);
       } else if (b.constructor.name === "Player" && b.ID !== this.c) {
-        console.log("hit player", d);
-        
         gs.scene.removeEntity(this);
-        // gs.scene.removeEntity(b);
+        if (this.c !== b.ID) {
+          this.c = b.ID;
+          console.log("hit player");
+          (b as Player)?.takeDamage(50);
+        }
       }
     });
     box.solid = false;

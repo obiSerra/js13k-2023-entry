@@ -53,7 +53,7 @@ type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 
 const staticImages: ImgFnMap = { groundBlock: { d: [32, 32], f: groundBlock }, bolt: { d: [12, 12], f: bolt } };
 
-class loadingBar extends ComponentBaseEntity {
+class LoadingBar extends ComponentBaseEntity {
   loadedImages: { [key: string]: { [key: string]: HTMLImageElement } } = { static: {} };
   constructor(stage: Stage) {
     const loadingEl = new HTMLComponent("#loading");
@@ -104,7 +104,7 @@ export const loadingScene = onEnd => {
   return new Scene((gs: GameState, scene) => {
     const { stage, gl } = gs;
 
-    const loading = new loadingBar(stage);
+    const loading = new LoadingBar(stage);
     scene.addEntity(loading);
 
     setTimeout(() => {

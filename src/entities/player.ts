@@ -2,6 +2,7 @@ import { MagicBolt } from "./bolt";
 import {
   BoxColliderComponent,
   GravityComponent,
+  HTMLComponent,
   KeyboardControlComponent,
   PositionComponent,
   SpriteRenderComponent,
@@ -10,6 +11,7 @@ import { IEntity, IStage, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { pXs } from "../lib/utils";
+import { Rechargeable } from "../services/Rechargeable";
 
 export const playerSprite: (images: any) => Sprite = images => {
   const {
@@ -83,30 +85,21 @@ export class PlayerControlComponent extends KeyboardControlComponent {
   }
 }
 
-export class Rechargeable {
-  max: number;
-  current: number;
-  constructor(max: number, current: number) {
-    this.max = max;
-    this.current = current;
+class LifeBarComponent extends HTMLComponent {
+  onInit(e: IEntity): void {
+      super.onInit(e);
+      this.show();
   }
-  recharge(delta: number) {
-    this.current = Math.min(this.current + delta, this.max);
-  }
-  use(delta: number) {
-    this.current = Math.max(this.current - delta, 0);
-  }
-  useAll() {
-    this.current = 0;
-  }
-  get isFull() {
-    return this.current >= this.max;
-  }
-  get isEmpty() {
-    return this.current < this.max;
+  onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
+    const life = (e as Player).life;
+    const bars = Math.floor(life / 10);
+    this.el.innerHTML = "";
+
+    for (let i = 0; i < bars; i++) {
+      this.el.innerHTML += `<div class="bar"></div>`;
+    }
   }
 }
-
 export class Player extends ComponentBaseEntity {
   gs: GameState;
   speed: number = 100;
@@ -118,6 +111,7 @@ export class Player extends ComponentBaseEntity {
   jumpCharged: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(500, 500);
   ducking: boolean = false;
+  life: number = 100;
   onEnd: () => void;
   constructor(gs: GameState, sprite: Sprite, onEnd: () => void) {
     const { stage } = gs;
@@ -125,6 +119,7 @@ export class Player extends ComponentBaseEntity {
     const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2]);
     const renderer = new SpriteRenderComponent(sprite, "idle");
     const control = new PlayerControlComponent();
+    const lifeBar = new LifeBarComponent("#life");
 
     const box = new BoxColliderComponent([36, 48], (b: IEntity, c: any) => {
       // console.log(b, c);
@@ -139,6 +134,7 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(control);
     this.addComponent(box);
     this.addComponent(gravity);
+    this.addComponent(lifeBar);
   }
 
   update(delta: number, gameState?: GameState): void {
@@ -206,6 +202,10 @@ export class Player extends ComponentBaseEntity {
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.components["render"] as SpriteRenderComponent;
     if (rend.currentAnimation !== "duck") rend.setupAnimation("duck");
+    if (this.onTheGround > 0) {
+      pos.v = [0, pos.v[1]];
+      pos.a = [0, pos.a[1]];
+    }
     if (!this.ducking) {
       // this.getComponent<PositionComponent>("position").p = [pos.p[0], pos.p[1] + 4];
       this.getComponent<BoxColliderComponent>("collider").box = [36, 20];
@@ -216,7 +216,7 @@ export class Player extends ComponentBaseEntity {
   }
 
   magicBolt() {
-    if (!this.fireCharge.isFull) return;
+    if (!this.fireCharge.isFull || this.ducking) return;
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
@@ -229,15 +229,20 @@ export class Player extends ComponentBaseEntity {
     super.destroy();
     this.onEnd();
   }
+
+  takeDamage(damage: number) {
+    this.life -= damage;
+    if (this.life <= 0) this.destroy();
+  }
 }
 
 export class Enemy extends ComponentBaseEntity {
   gs: GameState;
   fireCharge: Rechargeable = new Rechargeable(1500, 0);
-  constructor(gs: GameState, sprite: Sprite) {
+  constructor(gs: GameState, sprite: Sprite, pos: IVec) {
     const { stage } = gs;
     super(stage, []);
-    const position = new PositionComponent([stage.canvas.width + 50, stage.canvas.height / 2]);
+    const position = new PositionComponent(pos);
     const renderer = new SpriteRenderComponent(sprite, "idle");
     const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {
       // console.log(b, c);
