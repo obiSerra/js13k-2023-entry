@@ -10,7 +10,7 @@ import {
 import { IEntity, IStage, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
-import { pXs } from "../lib/utils";
+import { Throttle, pXs } from "../lib/utils";
 import { Rechargeable } from "../services/Rechargeable";
 
 export const playerSprite: (images: any) => Sprite = images => {
@@ -65,6 +65,8 @@ class LifeBarComponent extends HTMLComponent {
     }
   }
 }
+const fireThrottle = new Throttle(150);
+const enemyFireThrottle = new Throttle(150);
 export class Player extends ComponentBaseEntity {
   gs: GameState;
   status: string = "idle";
@@ -72,9 +74,10 @@ export class Player extends ComponentBaseEntity {
   maxRun: number = 300;
   jumpSpeed: number = -300;
   onTheGround: boolean = false;
-  fireCharge: Rechargeable = new Rechargeable(500, 500);
+  fireCharge: Rechargeable = new Rechargeable(1000, 500);
   jumpCharge: Rechargeable = new Rechargeable(200, 200);
   ducking: boolean = false;
+  firing: boolean = false;
   life: number = 100;
   onEnd: () => void;
   constructor(gs: GameState, sprite: Sprite, onEnd: () => void) {
@@ -97,7 +100,7 @@ export class Player extends ComponentBaseEntity {
         this.status = "duck";
       },
       " ": () => {
-        this.magicBolt();
+        this.firing = true;
       },
     };
     const upListeners = {
@@ -113,6 +116,9 @@ export class Player extends ComponentBaseEntity {
       },
       ArrowUp: () => {
         this.status = "idle";
+      },
+      " ": () => {
+        this.firing = false;
       },
     };
 
@@ -132,7 +138,6 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(lifeBar);
   }
   update(delta: number, gameState?: GameState): void {
-    this.fireCharge.recharge(delta);
     const pos = this.getComponent<PositionComponent>("position");
 
     if (pos.collisionSensors[2]?.d === 0) {
@@ -152,6 +157,10 @@ export class Player extends ComponentBaseEntity {
     else if (this.status === "idle") {
       this.stand();
     }
+
+    if (this.firing) fireThrottle.call(delta, () => this.magicBolt());
+    else this.fireCharge.recharge(delta);
+
     super.update(delta, gameState);
   }
   _resetBox() {
@@ -236,13 +245,14 @@ export class Player extends ComponentBaseEntity {
   }
 
   magicBolt() {
-    if (!this.fireCharge.isFull || this.ducking) return;
+
+    if (this.fireCharge.current < 75 || this.ducking) return;
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
-    this.fireCharge.useAll();
+    this.fireCharge.use(75);
   }
 
   destroy(): void {
@@ -258,7 +268,8 @@ export class Player extends ComponentBaseEntity {
 
 export class Enemy extends ComponentBaseEntity {
   gs: GameState;
-  fireCharge: Rechargeable = new Rechargeable(1500, 0);
+  fireCharge: Rechargeable = new Rechargeable(1000, 1000);
+  firing: boolean = false;
   constructor(gs: GameState, sprite: Sprite, pos: IVec) {
     const { stage } = gs;
     super(stage, []);
@@ -312,16 +323,28 @@ export class Enemy extends ComponentBaseEntity {
 
     // Attack - to move
 
-    if (dist < 300 && vDist < 100) this.magicBolt();
+
+    if (this.fireCharge.current < 350) this.firing = false;
+    const startBurst = this.firing || this.fireCharge.isFull;
+    // const startBurst = true;
+
+    if (dist < 600 && vDist < 100 && startBurst) {
+      this.firing = true;
+      enemyFireThrottle.call(delta, () => {
+        this.magicBolt();
+      });
+    } else {
+    }
   }
 
   magicBolt() {
-    if (!this.fireCharge.isFull) return;
+    const boltCost = 350;
+    if (this.fireCharge.current < boltCost) return;
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
-    this.fireCharge.useAll();
+    this.fireCharge.use(boltCost);
   }
 }

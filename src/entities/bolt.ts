@@ -3,16 +3,19 @@ import { PositionComponent, ImgRenderComponent, BoxColliderComponent } from "../
 import { IVec, IEntity } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
+import { Expire } from "../lib/utils";
 import { Player } from "./player";
 
 export class MagicBolt extends ComponentBaseEntity {
   c: string;
   h: string | null = null;
+  expire: Expire = new Expire(1000, this.endTime.bind(this));
+  gs: GameState;
   constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, v, [400, 600]);
-
+    this.gs = gs;
     this.c = creatorID;
 
     const renderer = new ImgRenderComponent(gs.images["static"].bolt);
@@ -28,7 +31,7 @@ export class MagicBolt extends ComponentBaseEntity {
         if (this.c !== b.ID) {
           this.c = b.ID;
           console.log("hit player");
-          (b as Player)?.takeDamage(50);
+          (b as Player)?.takeDamage(10);
         }
       }
     });
@@ -39,10 +42,13 @@ export class MagicBolt extends ComponentBaseEntity {
     this.addComponent(renderer);
     this.addComponent(box);
   }
+  endTime() {
+    this.gs.scene.removeEntity(this);
+  }
 
   update(delta: number, gs: GameState): void {
-    const pos = this.getComponent<PositionComponent>("position");
     // pos.maxMove[2]
+    this.expire.update(delta);
 
     super.update(delta, gs);
   }

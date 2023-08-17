@@ -15,3 +15,44 @@ export const isInView = (e: IEntity, c: IVec, canvas: HTMLCanvasElement) => {
   if (iP[0] < -border || iP[0] > width + border || iP[1] < -border || iP[1] > height + border) return false;
   return true;
 };
+
+export class Throttle {
+  private _lastCall: number;
+  private _limit: number;
+
+  constructor(limit: number) {
+    this._lastCall = 0;
+    this._limit = limit;
+  }
+
+  call(d: number, fn: () => void) {
+    this._lastCall += d;
+    if (this._lastCall > this._limit) {
+      this._lastCall = 0;
+      fn();
+    }
+  }
+  update(d: number) {
+    this._lastCall += d;
+  }
+}
+
+export class Expire {
+  private _ttl: number;
+  private _lived: number;
+  private _onExpire: () => void;
+
+  constructor(ttl: number, onExpire: () => void) {
+    this._lived = 0;
+    this._ttl = ttl;
+    this._onExpire = onExpire;
+  }
+
+  update(d: number) {
+    this._lived += d;
+
+    if (this._lived > this._ttl) {
+      this._onExpire();
+    }
+  }
+}
