@@ -25,5 +25,4 @@ gameState.scene = loadingScene(() => {
   gameState.runScene();
 });
 mainScene();
-console.log("Running main scene");
 gameState.runScene();

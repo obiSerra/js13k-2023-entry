@@ -50,45 +50,10 @@ export const enemySprite: (images: any) => Sprite = images => {
   };
 };
 
-export class PlayerControlComponent extends KeyboardControlComponent {
-  onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
-    const player = e as Player;
-
-    this.downButtons = new Set([...this.downButtons, ...this.clickedDown].filter(x => !this.clickedUp.has(x)));
-    let none = true;
-    if (this.downButtons.has("ArrowLeft")) {
-      none = false;
-      player.walkLeft(delta);
-    } else if (this.downButtons.has("ArrowRight")) {
-      none = false;
-      player.walkRight(delta);
-    }
-
-    if (this.downButtons.has("ArrowUp")) {
-      player.jump();
-    }
-
-    if (this.downButtons.has("ArrowDown")) {
-      none = false;
-      player.duck();
-    } else {
-      player._resetBox();
-    }
-
-    if (this.downButtons.has(" ")) {
-      player.magicBolt();
-    }
-    if (none) player.stand();
-
-    this.clickedDown.clear();
-    this.clickedUp.clear();
-  }
-}
-
 class LifeBarComponent extends HTMLComponent {
   onInit(e: IEntity): void {
-      super.onInit(e);
-      this.show();
+    super.onInit(e);
+    this.show();
   }
   onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
     const life = (e as Player).life;
@@ -102,28 +67,58 @@ class LifeBarComponent extends HTMLComponent {
 }
 export class Player extends ComponentBaseEntity {
   gs: GameState;
-  speed: number = 100;
+  status: string = "idle";
+  speed: number = 200;
+  maxRun: number = 300;
   jumpSpeed: number = -300;
-  jumpTicks: number = 0;
-  jumpMaxTicks: number = 10;
-  jumpCharge: number = 200;
-  onTheGround: number = 0;
-  jumpCharged: boolean = false;
+  onTheGround: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(500, 500);
+  jumpCharge: Rechargeable = new Rechargeable(200, 200);
   ducking: boolean = false;
   life: number = 100;
   onEnd: () => void;
   constructor(gs: GameState, sprite: Sprite, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
-    const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2]);
+    const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2], [0, 0], [400, 400]);
     const renderer = new SpriteRenderComponent(sprite, "idle");
-    const control = new PlayerControlComponent();
-    const lifeBar = new LifeBarComponent("#life");
 
-    const box = new BoxColliderComponent([36, 48], (b: IEntity, c: any) => {
-      // console.log(b, c);
-    });
+    const downListeners = {
+      ArrowLeft: () => {
+        this.status = "walk-left";
+      },
+      ArrowRight: () => {
+        this.status = "walk-right";
+      },
+      ArrowUp: () => {
+        this.jump();
+      },
+      ArrowDown: () => {
+        this.status = "duck";
+      },
+      " ": () => {
+        this.magicBolt();
+      },
+    };
+    const upListeners = {
+      ArrowLeft: () => {
+        this.status = "idle";
+      },
+      ArrowRight: () => {
+        this.status = "idle";
+      },
+      ArrowDown: () => {
+        this._resetBox();
+        this.status = "idle";
+      },
+      ArrowUp: () => {
+        this.status = "idle";
+      },
+    };
+
+    const control = new KeyboardControlComponent(downListeners, upListeners);
+    const lifeBar = new LifeBarComponent("#life");
+    const box = new BoxColliderComponent([36, 48], (b: IEntity, c: any) => {});
     box.posModifiers = [8, 0];
     const gravity = new GravityComponent();
     this.gs = gs;
@@ -136,73 +131,98 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(gravity);
     this.addComponent(lifeBar);
   }
-
   update(delta: number, gameState?: GameState): void {
     this.fireCharge.recharge(delta);
     const pos = this.getComponent<PositionComponent>("position");
+
     if (pos.collisionSensors[2]?.d === 0) {
-      this.onTheGround += delta;
+      this.onTheGround = true;
+      this.jumpCharge.recharge(delta);
     } else {
-      this.onTheGround = 0;
+      this.onTheGround = false;
     }
 
-    if (this.jumpTicks > this.jumpMaxTicks) {
-      this.jumpCharged = false;
+    if (this.status === "walk-left") {
+      this._resetBox();
+      this.walkLeft();
+    } else if (this.status === "walk-right") {
+      this._resetBox();
+      this.walkRight();
+    } else if (this.status === "duck") this.duck();
+    else if (this.status === "idle") {
+      this.stand();
     }
-    if (this.onTheGround > this.jumpCharge) {
-      this.jumpCharged = true;
-      this.jumpTicks = 0;
-    }
-
     super.update(delta, gameState);
   }
   _resetBox() {
-    this.getComponent<BoxColliderComponent>("collider").box = [36, 48];
+    this.ducking = false;
     this.getComponent<BoxColliderComponent>("collider").posModifiers = [8, 0];
     this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 0];
-    this.ducking = false;
+    this.getComponent<BoxColliderComponent>("collider").box = [36, 48];
   }
-  walkLeft(d: number) {
+  walkLeft() {
+    // this.status = "walk-left";
     const pos = this.components["position"] as PositionComponent;
     const rend = this.components["render"] as SpriteRenderComponent;
     if (rend.currentAnimation !== "runLeft") rend.setupAnimation("runLeft");
+    let accSpeed = -this.speed;
 
-    if (this.onTheGround > 0) pos.accelerate([-this.speed, 0]);
-    else pos.accelerate([-this.speed / 10, 0]);
+    const exceeding = Math.abs(pos.v[0] - this.speed) - this.maxRun;
+    if (exceeding >= 0) accSpeed = -this.speed + exceeding;
+
+    if (this.onTheGround) pos.accelerate([accSpeed, 0]);
+    else {
+      pos.accelerate([accSpeed, 0]);
+    }
     pos.direction = 1;
   }
-  walkRight(d: number) {
+  walkRight() {
+    // this.status = "walk-right";
     const pos = this.components["position"] as PositionComponent;
     const rend = this.components["render"] as SpriteRenderComponent;
     if (rend.currentAnimation !== "run") rend.setupAnimation("run");
-    if (this.onTheGround > 0) pos.accelerate([this.speed, 0]);
-    else pos.accelerate([this.speed / 10, 0]);
+    let accSpeed = this.speed;
+
+    const exceeding = Math.abs(pos.v[0] + this.speed) - this.maxRun;
+    if (exceeding >= 0) accSpeed = this.speed - exceeding;
+
+    if (this.onTheGround) pos.accelerate([accSpeed, 0]);
+    else {
+      pos.accelerate([accSpeed, 0]);
+    }
     pos.direction = -1;
   }
 
   jump() {
+    // this.status = "jump";
     const pos = this.components["position"] as PositionComponent;
-    if (this.jumpCharged) {
+    if (this.jumpCharge.isFull && this.onTheGround) {
       pos.accelerate([0, this.jumpSpeed]);
-      this.jumpTicks++;
+      this.jumpCharge.useAll();
     }
   }
   stand() {
+    // this.status = "idle";
     const pos = this.components["position"] as PositionComponent;
     const rend = this.components["render"] as SpriteRenderComponent;
 
     if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
     if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
-    if (this.onTheGround > 0) {
+
+    if (this.onTheGround) {
       pos.v = [0, pos.v[1]];
       pos.a = [0, pos.a[1]];
+    } else {
+      const a = -pos.v[0] * 0.03;
+      pos.a = [a, pos.a[1]];
     }
   }
   duck() {
+    // this.status = "crouch";
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.components["render"] as SpriteRenderComponent;
     if (rend.currentAnimation !== "duck") rend.setupAnimation("duck");
-    if (this.onTheGround > 0) {
+    if (this.onTheGround) {
       pos.v = [0, pos.v[1]];
       pos.a = [0, pos.a[1]];
     }
@@ -244,9 +264,7 @@ export class Enemy extends ComponentBaseEntity {
     super(stage, []);
     const position = new PositionComponent(pos);
     const renderer = new SpriteRenderComponent(sprite, "idle");
-    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {
-      // console.log(b, c);
-    });
+    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {});
     const gravity = new GravityComponent();
     this.gs = gs;
 
