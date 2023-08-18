@@ -14,9 +14,37 @@ const basicEnemyColors = {
   "#c22828": "lightgrey",
 };
 
+function rotate90Clockwise(a: number[][]) {
+  const N = a.length;
+  for (let i = 0; i < Math.round(N / 2); i++) {
+    for (let j = i; j < N - i - 1; j++) {
+      var temp = a[i][j];
+      a[i][j] = a[N - 1 - j][i];
+      a[N - 1 - j][i] = a[N - 1 - i][N - 1 - j];
+      a[N - 1 - i][N - 1 - j] = a[j][N - 1 - i];
+      a[j][N - 1 - i] = temp;
+    }
+  }
+}
+
+const rollImage = (img: number[][], t = 1) => {
+  const newImg = JSON.parse(JSON.stringify(img));
+  for (let i = 0; i < t; i++) rotate90Clockwise(newImg);
+
+  return newImg;
+};
+
 // "#2a2203", "#f9c4b4", "#000000", "#0f0c00", "#1d7ba7", "#c22828", "#4a4a4a"
 const pxImages: [string, ImagePxsRawMap][] = [
-  ["player", player],
+  [
+    "player",
+    {
+      ...player,
+      roll_1: rollImage(player["duck"], 1),
+      roll_2: rollImage(player["duck"], 2),
+      roll_3: rollImage(player["duck"], 3),
+    },
+  ],
   ["enemy", colorizeImages(basicEnemyColors, player)],
 ];
 

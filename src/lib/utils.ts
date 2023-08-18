@@ -21,7 +21,7 @@ export class Throttle {
   private _limit: number;
 
   constructor(limit: number) {
-    this._lastCall = 0;
+    this._lastCall = limit;
     this._limit = limit;
   }
 

@@ -14,39 +14,24 @@ import { Throttle, pXs } from "../lib/utils";
 import { Rechargeable } from "../services/Rechargeable";
 
 export const playerSprite: (images: any) => Sprite = images => {
-  const {
-    player_stand_1,
-    player_stand_2,
-    player_stand_1_left,
-    player_stand_2_left,
-    player_run_1,
-    player_run_1_left,
-    duck,
-  } = images["player"];
+  const p = images["player"];
   return {
-    idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
-    idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
-    run: { frames: [player_run_1, player_stand_1], changeTime: 150 },
-    runLeft: { frames: [player_run_1_left, player_stand_1_left], changeTime: 150 },
-    duck: { frames: [duck], changeTime: 500 },
+    idle: { frames: [p.stand_1, p.stand_2], changeTime: 500 },
+    idleLeft: { frames: [p.stand_1_left, p.stand_2_left], changeTime: 500 },
+    run: { frames: [p.run_1, p.stand_1], changeTime: 150 },
+    runLeft: { frames: [p.run_1_left, p.stand_1_left], changeTime: 150 },
+    duck: { frames: [p.duck, p.roll_1, p.roll_2, p.roll_3], changeTime: 50 },
+    duckLeft: { frames: [p.duck_left, p.roll_1_left, p.roll_2_left, p.roll_3_left], changeTime: 50 },
   };
 };
 
 export const enemySprite: (images: any) => Sprite = images => {
-  const {
-    player_stand_1,
-    player_stand_2,
-    player_stand_1_left,
-    player_stand_2_left,
-    player_run_1,
-    player_run_1_left,
-    duck,
-  } = images["enemy"];
+  const { stand_1, stand_2, stand_1_left, stand_2_left, run_1, run_1_left, duck } = images["enemy"];
   return {
-    idle: { frames: [player_stand_1, player_stand_2], changeTime: 500 },
-    idleLeft: { frames: [player_stand_1_left, player_stand_2_left], changeTime: 500 },
-    run: { frames: [player_run_1, player_stand_1], changeTime: 150 },
-    runLeft: { frames: [player_run_1_left, player_stand_1_left], changeTime: 150 },
+    idle: { frames: [stand_1, stand_2], changeTime: 500 },
+    idleLeft: { frames: [stand_1_left, stand_2_left], changeTime: 500 },
+    run: { frames: [run_1, stand_1], changeTime: 150 },
+    runLeft: { frames: [run_1_left, stand_1_left], changeTime: 150 },
   };
 };
 
@@ -66,7 +51,6 @@ class LifeBarComponent extends HTMLComponent {
   }
 }
 const fireThrottle = new Throttle(150);
-const enemyFireThrottle = new Throttle(150);
 export class Player extends ComponentBaseEntity {
   gs: GameState;
   status: string = "idle";
@@ -76,7 +60,8 @@ export class Player extends ComponentBaseEntity {
   onTheGround: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(1000, 500);
   jumpCharge: Rechargeable = new Rechargeable(200, 200);
-  ducking: boolean = false;
+  rollCharge: Rechargeable = new Rechargeable(150, 150);
+  rolling: number = 0;
   firing: boolean = false;
   life: number = 100;
   onEnd: () => void;
@@ -97,9 +82,14 @@ export class Player extends ComponentBaseEntity {
         this.jump();
       },
       ArrowDown: () => {
-        this.status = "duck";
+        if (this.onTheGround && this.rollCharge.isFull) {
+          this.rolling = 300;
+          this.duck();
+          this.rollCharge.useAll();
+        }
       },
       " ": () => {
+        // console.log("fire", new Date().getTime());
         this.firing = true;
       },
     };
@@ -111,11 +101,11 @@ export class Player extends ComponentBaseEntity {
         this.status = "idle";
       },
       ArrowDown: () => {
-        this._resetBox();
-        this.status = "idle";
+        // this._resetBox();
+        // this.status = "idle";
       },
       ArrowUp: () => {
-        this.status = "idle";
+        // this.status = "idle";
       },
       " ": () => {
         this.firing = false;
@@ -137,6 +127,10 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(gravity);
     this.addComponent(lifeBar);
   }
+
+  get invulnerable() {
+    return this.rolling > 0;
+  }
   update(delta: number, gameState?: GameState): void {
     const pos = this.getComponent<PositionComponent>("position");
 
@@ -147,24 +141,33 @@ export class Player extends ComponentBaseEntity {
       this.onTheGround = false;
     }
 
-    if (this.status === "walk-left") {
+    if (this.rolling > 0) {
+      this.rolling -= delta;
+    } else {
+      this.rollCharge.recharge(delta);
       this._resetBox();
-      this.walkLeft();
-    } else if (this.status === "walk-right") {
-      this._resetBox();
-      this.walkRight();
-    } else if (this.status === "duck") this.duck();
-    else if (this.status === "idle") {
-      this.stand();
+      if (this.status === "walk-left") {
+        this.walkLeft();
+      } else if (this.status === "walk-right") {
+        this.walkRight();
+      } else if (this.status === "duck") {
+        this.duck();
+      } else if (this.status === "idle") {
+        this.stand();
+      }
     }
 
-    if (this.firing) fireThrottle.call(delta, () => this.magicBolt());
-    else this.fireCharge.recharge(delta);
+    if (this.firing) {
+      fireThrottle.call(delta, () => this.magicBolt());
+    } else {
+      fireThrottle.update(delta);
+      this.fireCharge.recharge(delta);
+    }
 
     super.update(delta, gameState);
   }
   _resetBox() {
-    this.ducking = false;
+    this.rolling = 0;
     this.getComponent<BoxColliderComponent>("collider").posModifiers = [8, 0];
     this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 0];
     this.getComponent<BoxColliderComponent>("collider").box = [36, 48];
@@ -230,23 +233,20 @@ export class Player extends ComponentBaseEntity {
     // this.status = "crouch";
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.components["render"] as SpriteRenderComponent;
-    if (rend.currentAnimation !== "duck") rend.setupAnimation("duck");
-    if (this.onTheGround) {
-      pos.v = [0, pos.v[1]];
-      pos.a = [0, pos.a[1]];
-    }
-    if (!this.ducking) {
-      // this.getComponent<PositionComponent>("position").p = [pos.p[0], pos.p[1] + 4];
-      this.getComponent<BoxColliderComponent>("collider").box = [36, 20];
-      this.getComponent<BoxColliderComponent>("collider").posModifiers = [0, 28];
-      this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 8];
-      this.ducking = true;
-    }
+    const d = pos.direction;
+    if (d === -1 && rend.currentAnimation !== "duck") rend.setupAnimation("duck");
+    else if (d === 1 && rend.currentAnimation !== "duckLeft") rend.setupAnimation("duckLeft");
+    pos.v = [0, pos.v[1]];
+    pos.a = [300 * -pos.direction, pos.a[1]];
+
+    // this.getComponent<PositionComponent>("position").p = [pos.p[0], pos.p[1] + 4];
+    this.getComponent<BoxColliderComponent>("collider").box = [36, 20];
+    this.getComponent<BoxColliderComponent>("collider").posModifiers = [0, 28];
+    this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 8];
   }
 
   magicBolt() {
-
-    if (this.fireCharge.current < 75 || this.ducking) return;
+    if (this.fireCharge.current < 75 || this.rolling) return;
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
@@ -261,11 +261,12 @@ export class Player extends ComponentBaseEntity {
   }
 
   takeDamage(damage: number) {
+    if (this.invulnerable) return;
     this.life -= damage;
     if (this.life <= 0) this.destroy();
   }
 }
-
+const enemyFireThrottle = new Throttle(100);
 export class Enemy extends ComponentBaseEntity {
   gs: GameState;
   fireCharge: Rechargeable = new Rechargeable(1000, 1000);
@@ -323,7 +324,6 @@ export class Enemy extends ComponentBaseEntity {
 
     // Attack - to move
 
-
     if (this.fireCharge.current < 350) this.firing = false;
     const startBurst = this.firing || this.fireCharge.isFull;
     // const startBurst = true;
@@ -338,7 +338,7 @@ export class Enemy extends ComponentBaseEntity {
   }
 
   magicBolt() {
-    const boltCost = 350;
+    const boltCost = 550;
     if (this.fireCharge.current < boltCost) return;
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;

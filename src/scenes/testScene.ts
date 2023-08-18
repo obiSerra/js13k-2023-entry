@@ -53,14 +53,14 @@ export const testScene = onEnd => {
     // Generate map
     let cnt = 0;
     let v = 400;
-    for (let i = -200; i < 1000; i++) {
+    for (let i = -0; i < 1000; i++) {
       if (i > 20) {
         // if (i % 11 === 0) continue;
         // if (i % 11 === 1) continue;
         // if (i % 11 === 2 && Math.random() < 0.5) continue;
         // if (i % 11 === 3 && Math.random() < 0.5) continue;
       }
-      if (i % 50 == 0 && i > 49) v -= 64;
+      if (i % 50 == 0 && i > 99) v -= 64;
 
       // if (i % 15 === 0) {
       //   scene.addEntity(new Ground(gs, [i * 32, v - 32], cnt.toString()));
