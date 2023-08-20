@@ -8,10 +8,13 @@ import { Stage } from "../lib/stage";
 import { multiplyVecScalar } from "../lib/utils";
 
 const basicEnemyColors = {
-  "#2a2203": "white",
-  "#f9c4b4": "lightgrey",
-  "#1d7ba7": "black",
-  "#c22828": "lightgrey",
+  white: ["#2a2203"],
+  lightgrey: ["#f9c4b4", "#c22828"],
+  black: ["#1d7ba7"],
+};
+
+const damagedColors = {
+  "red": ["#2a2203", "#f9c4b4", "#1d7ba7", "#c22828"],
 };
 
 function rotate90Clockwise(a: number[][]) {
@@ -34,6 +37,8 @@ const rollImage = (img: number[][], t = 1) => {
   return newImg;
 };
 
+const colorizedPlayer = colorizeImages(damagedColors, player);
+
 // "#2a2203", "#f9c4b4", "#000000", "#0f0c00", "#1d7ba7", "#c22828", "#4a4a4a"
 const pxImages: [string, ImagePxsRawMap][] = [
   [
@@ -43,6 +48,8 @@ const pxImages: [string, ImagePxsRawMap][] = [
       roll_1: rollImage(player["duck"], 1),
       roll_2: rollImage(player["duck"], 2),
       roll_3: rollImage(player["duck"], 3),
+      dmg_1: colorizedPlayer["stand_1"],
+      colors: colorizedPlayer['colors'] as string[],
     },
   ],
   ["enemy", colorizeImages(basicEnemyColors, player)],

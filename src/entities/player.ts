@@ -22,6 +22,8 @@ export const playerSprite: (images: any) => Sprite = images => {
     runLeft: { frames: [p.run_1_left, p.stand_1_left], changeTime: 150 },
     duck: { frames: [p.duck, p.roll_1, p.roll_2, p.roll_3], changeTime: 50 },
     duckLeft: { frames: [p.duck_left, p.roll_1_left, p.roll_2_left, p.roll_3_left], changeTime: 50 },
+    dmg: { frames: [p.dmg_1, p.stand_1], changeTime: 50 },
+    dmgLeft: { frames: [p.dmg_1_left, p.stand_1_left], changeTime: 50 },
   };
 };
 
@@ -89,7 +91,6 @@ export class Player extends ComponentBaseEntity {
         }
       },
       " ": () => {
-        // console.log("fire", new Date().getTime());
         this.firing = true;
       },
     };
@@ -262,6 +263,9 @@ export class Player extends ComponentBaseEntity {
 
   takeDamage(damage: number) {
     if (this.invulnerable) return;
+
+    const rend = this.components["render"] as SpriteRenderComponent;
+    if (rend.currentAnimation !== "dmg") rend.setupAnimation("dmg");
     this.life -= damage;
     if (this.life <= 0) this.destroy();
   }

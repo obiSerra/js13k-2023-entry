@@ -45,13 +45,39 @@ export function deepCopy<Type>(arg: Type): Type {
 }
 export const flipImage = (image: ImagePxs): ImagePxs => deepCopy(image).map(row => row.reverse());
 
-export const colorizeImages = (newColors: { [k: string]: string }, original: ImagePxsRawMap) => {
-  const copy = JSON.parse(JSON.stringify(original));
-
-  copy.colors = copy.colors.map((c, i) => {
-    if (c in newColors) return newColors[c];
-    else return c;
+export const deHydrateImages = (images: ImagePxs): ImagePxsRawMap => {
+  const colors = new Set();
+  for (let imgName in images) {
+    const pxs = images[imgName].flat();
+    for (let px of pxs) {
+      colors.add(px);
+    }
+  }
+  let short = JSON.stringify(images);
+  Array.from(colors).forEach((color, i) => {
+    short = short.replace(new RegExp(`"?${color}"?`, "gi"), `${i}`);
   });
+  const shortData = JSON.parse(short);
+  shortData.colors = Array.from(colors);
+  return shortData;
+};
 
+export const colorizeImages = (newColors: { [k: string]: string[] }, original: ImagePxsRawMap) => {
+  let copy = deepCopy(original);
+
+  copy.colors = [...original.colors, ...Object.keys(newColors)] as string[];
+
+  let strVersion = JSON.stringify(copy);
+  for (let nC of Object.keys(newColors)) {
+    for (let c of newColors[nC]) {
+      const iC = copy.colors.indexOf(c);
+      const inC = copy.colors.indexOf(nC);
+      for (let k in copy) {
+        if (k !== "colors") {
+          copy[k] = copy[k].map(row => row.map(px => (px === iC ? inC : px)));
+        }
+      }
+    }
+  }
   return copy;
 };
