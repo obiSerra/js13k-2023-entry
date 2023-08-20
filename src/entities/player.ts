@@ -67,7 +67,7 @@ export class Player extends ComponentBaseEntity {
   firing: boolean = false;
   life: number = 100;
   onEnd: () => void;
-  constructor(gs: GameState, sprite: Sprite, onEnd: () => void) {
+  constructor(gs: GameState, sprite: Sprite, lives: number, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2], [0, 0], [400, 400]);
@@ -134,6 +134,8 @@ export class Player extends ComponentBaseEntity {
   }
   update(delta: number, gameState?: GameState): void {
     const pos = this.getComponent<PositionComponent>("position");
+
+    if (pos.p[1] > 800) this.destroy();
 
     if (pos.collisionSensors[2]?.d === 0) {
       this.onTheGround = true;

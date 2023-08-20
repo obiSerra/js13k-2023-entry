@@ -14,7 +14,7 @@ const basicEnemyColors = {
 };
 
 const damagedColors = {
-  "red": ["#2a2203", "#f9c4b4", "#1d7ba7", "#c22828"],
+  red: ["#2a2203", "#f9c4b4", "#1d7ba7", "#c22828"],
 };
 
 function rotate90Clockwise(a: number[][]) {
@@ -49,7 +49,7 @@ const pxImages: [string, ImagePxsRawMap][] = [
       roll_2: rollImage(player["duck"], 2),
       roll_3: rollImage(player["duck"], 3),
       dmg_1: colorizedPlayer["stand_1"],
-      colors: colorizedPlayer['colors'] as string[],
+      colors: colorizedPlayer["colors"] as string[],
     },
   ],
   ["enemy", colorizeImages(basicEnemyColors, player)],
@@ -135,20 +135,23 @@ class LoadingBar extends ComponentBaseEntity {
   }
 }
 
-export const loadingScene = onEnd => {
-  return new Scene((gs: GameState, scene) => {
-    const { stage, gl } = gs;
+export const loadingScene = () => {
+  return new Scene(
+    async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene }> =>
+      new Promise((resolve, reject) => {
+        const { stage, gl } = gs;
 
-    const loading = new LoadingBar(stage);
-    scene.addEntity(loading);
+        const loading = new LoadingBar(stage);
+        scene.addEntity(loading);
 
-    setTimeout(() => {
-      gs.images = loading.loadedImages;
+        setTimeout(() => {
+          gs.images = loading.loadedImages;
 
-      loading.destroy();
-      scene.endScene();
-    }, 1000);
+          loading.destroy();
+          resolve({ gs, scene });
+        }, 1000);
 
-    gl.start();
-  }, onEnd);
+        gl.start();
+      })
+  );
 };

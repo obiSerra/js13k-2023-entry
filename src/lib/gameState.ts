@@ -7,17 +7,15 @@ type SceneContent = (gs: GameState, scene: Scene) => void;
 export class Scene {
   content: SceneContent;
   _entities: IEntity[] = [];
-  endScene: () => void;
 
   cameraPos: IVec = [0, 0];
 
-  constructor(content: SceneContent, endScene: () => void = () => {}) {
+  constructor(content: SceneContent) {
     this.content = content;
-    this.endScene = endScene;
   }
 
-  run(gameState: GameState) {
-    this.content(gameState, this);
+  async run(gameState: GameState) {
+    return await this.content(gameState, this);
   }
 
   addEntity(e: IEntity) {
@@ -37,6 +35,7 @@ export class GameState {
   stage: Stage;
   gl: GameLoop;
   images: { [key: string]: { [key: string]: HTMLImageElement } } = {};
+  session: { [key: string]: any } = {};
 
   scene: Scene | null = null;
 
@@ -46,7 +45,7 @@ export class GameState {
   }
 
   runScene() {
-    this.scene?.run(this);
+    return this.scene?.run(this);
   }
   getImg(key: string) {
     if (!this.images[key]) {

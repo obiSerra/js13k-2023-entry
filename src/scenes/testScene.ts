@@ -1,6 +1,7 @@
 import { resolveCollisions } from "../lib/collisions";
 import {
   BoxColliderComponent,
+  HTMLComponent,
   ImgRenderComponent,
   PositionComponent,
   StaticPositionComponent,
@@ -39,76 +40,102 @@ class Ground extends ComponentBaseEntity {
     ctx.closePath();
   }
 }
+class LivesCountComponent extends HTMLComponent {
+  onInit(e: IEntity): void {
+    super.onInit(e);
+    this.show();
+  }
+  onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
+    this.el.innerHTML = `<span>${gameState?.session?.lives || ""}</span>`;
+  }
+}
 
-export const testScene = onEnd => {
-  return new Scene((gs: GameState, scene: Scene) => {
-    const { gl } = gs;
+class Lives extends ComponentBaseEntity {
+  constructor(gs: GameState) {
+    const { stage } = gs;
+    super(stage, []);
 
-    const player = new Player(gs, playerSprite(gs.images), onEnd);
+    const html = new LivesCountComponent("#lives");
 
-    scene.addEntity(player);
+    this.addComponent(html);
+  }
+}
 
-    // scene.addEntity(new LifeBar(gs.stage));
+export const testScene = () => {
+  return new Scene(
+    async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene }> =>
+      new Promise((resolve, reject) => {
+        const { gl } = gs;
 
-    // Generate map
-    let cnt = 0;
-    let v = 400;
-    for (let i = -0; i < 1000; i++) {
-      if (i > 20) {
-        // if (i % 11 === 0) continue;
-        // if (i % 11 === 1) continue;
-        // if (i % 11 === 2 && Math.random() < 0.5) continue;
-        // if (i % 11 === 3 && Math.random() < 0.5) continue;
-      }
-      if (i % 50 == 0 && i > 99) v -= 64;
+        const player = new Player(gs, playerSprite(gs.images), 3, () => {
+          resolve({ gs, scene });
+        });
 
-      // if (i % 15 === 0) {
-      //   scene.addEntity(new Ground(gs, [i * 32, v - 32], cnt.toString()));
-      //   cnt++;
-      //   if (Math.random() < 0.5) {
-      //     scene.addEntity(new Ground(gs, [i * 32, v - 64], cnt.toString()));
-      //     cnt++;
-      //   }
-      // }
-      scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
-      cnt++;
+        scene.addEntity(player);
+        scene.addEntity(new Lives(gs));
 
-      if (i > 50 && i % 17 === 0) {
-        scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64]));
-      }
-      // lastBlock = 0;
-    }
+        // scene.addEntity(new LifeBar(gs.stage));
 
-    gl.onUpdate(delta => {
-      const [x, y] = player.getComponent<PositionComponent>("position").p;
-      const cx = gs.stage.canvas.width / 2 - x;
-      const cy = gs.stage.canvas.height / 2 - y;
+        // Generate map
+        let cnt = 0;
+        let v = 400;
+        for (let i = -0; i < 1000; i++) {
+          if (i > 20) {
+            // if (i % 11 === 0) continue;
+            // if (i % 11 === 1) continue;
+            // if (i % 11 === 2 && Math.random() < 0.5) continue;
+            // if (i % 11 === 3 && Math.random() < 0.5) continue;
+          }
+          if (i % 50 == 0 && i > 99) v -= 64;
 
-      const inView = scene.getEntities().filter(e => isInView(e, [cx, cy], gs.stage.canvas));
+          // if (i % 15 === 0) {
+          //   scene.addEntity(new Ground(gs, [i * 32, v - 32], cnt.toString()));
+          //   cnt++;
+          //   if (Math.random() < 0.5) {
+          //     scene.addEntity(new Ground(gs, [i * 32, v - 64], cnt.toString()));
+          //     cnt++;
+          //   }
+          // }
+          scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
+          cnt++;
 
-      inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta, gs));
+          if (i > 50 && i % 17 === 0) {
+            scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64]));
+          }
+          // lastBlock = 0;
+        }
 
-      resolveCollisions(inView.filter(e => !!e.components["collider"]));
-    });
+        gl.onUpdate(delta => {
+          const [x, y] = player.getComponent<PositionComponent>("position").p;
+          const cx = gs.stage.canvas.width / 2 - x;
+          const cy = gs.stage.canvas.height / 2 - y;
 
-    gl.onRender(t => {
-      const [x, y] = player.getComponent<PositionComponent>("position").p;
-      const cx = gs.stage.canvas.width / 2 - x;
-      const cy = gs.stage.canvas.height / 2 - y;
+          const inView = scene.getEntities().filter(e => isInView(e, [cx, cy], gs.stage.canvas));
 
-      // scene.cameraPos = [cx, cy];
-      let toRender = scene.getEntities().filter(e => {
-        if (!e.components["render"]) return false;
-        return isInView(e, [cx, cy], gs.stage.canvas);
-      });
+          inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta, gs));
 
-      toRender.sort(
-        (a, b) =>
-          (b.components["render"] as IRenderComponent).renderPriority -
-          (a.components["render"] as IRenderComponent).renderPriority
-      );
+          resolveCollisions(inView.filter(e => !!e.components["collider"]));
+        });
 
-      toRender.forEach(e => e.render(t, [cx, cy]));
-    });
-  }, onEnd);
+        gl.onRender(t => {
+          const [x, y] = player.getComponent<PositionComponent>("position").p;
+          const cx = gs.stage.canvas.width / 2 - x;
+          const cy = gs.stage.canvas.height / 2 - y;
+
+          // scene.cameraPos = [cx, cy];
+          let toRender = scene.getEntities().filter(e => {
+            if (!e.components["render"]) return false;
+            return isInView(e, [cx, cy], gs.stage.canvas);
+          });
+
+          toRender.sort(
+            (a, b) =>
+              (b.components["render"] as IRenderComponent).renderPriority -
+              (a.components["render"] as IRenderComponent).renderPriority
+          );
+
+          toRender.forEach(e => e.render(t, [cx, cy]));
+        });
+      })
+  );
 };

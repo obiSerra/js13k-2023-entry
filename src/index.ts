@@ -1,28 +1,24 @@
-import { Stage } from "./lib/stage";
-import { GameLoop } from "./lib/gameLoop";
-
-import { GameState, Scene } from "./lib/gameState";
-import { ComponentBaseEntity } from "./lib/entities";
-import { HTMLComponent, MenuComponent } from "./lib/components";
-import { loadingScene } from "./scenes/loadingScene";
-import { Sprite } from "./lib/contracts";
-import { testScene } from "./scenes/testScene";
 import "./assets/main.scss";
+import { w } from "./lib/dom";
+import { GameState } from "./lib/gameState";
+import { loadingScene } from "./scenes/loadingScene";
+import { testScene } from "./scenes/testScene";
 
-const gameState = new GameState();
 
-const mainScene = () =>
-  testScene(() => {
-    alert("Game over");
-    gameState.scene = mainScene();
+
+(async () => {
+  const gameState = new GameState();
+  gameState.session.lives = 3;
+
+  gameState.scene = loadingScene();
+  await gameState.runScene();
+
+  while (gameState.session.lives > 0) {
     console.log("Running main scene");
-    gameState.runScene();
-  });
-
-gameState.scene = loadingScene(() => {
-  gameState.scene = mainScene();
-  console.log("Running main scene");
-  gameState.runScene();
-});
-mainScene();
-gameState.runScene();
+    gameState.scene = testScene();
+    await gameState.runScene();
+    gameState.session.lives--;
+  }
+  alert("Game over");
+  location.reload();
+})();
