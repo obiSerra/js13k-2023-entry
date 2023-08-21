@@ -106,6 +106,8 @@ export const testScene = () => {
         }
 
         gl.onUpdate(delta => {
+          if (gs.status !== "running") return;
+
           const [x, y] = player.getComponent<PositionComponent>("position").p;
           const cx = gs.stage.canvas.width / 2 - x;
           const cy = gs.stage.canvas.height / 2 - y;

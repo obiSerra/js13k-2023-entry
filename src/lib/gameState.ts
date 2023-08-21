@@ -14,8 +14,8 @@ export class Scene {
     this.content = content;
   }
 
-  async run(gameState: GameState) {
-    return await this.content(gameState, this);
+  async run<T>(gameState: GameState): Promise<T> {
+    return await this.content(gameState, this) as T;
   }
 
   addEntity(e: IEntity) {
@@ -36,7 +36,8 @@ export class GameState {
   gl: GameLoop;
   images: { [key: string]: { [key: string]: HTMLImageElement } } = {};
   session: { [key: string]: any } = {};
-
+  status: string = "init";
+  _glbEntities: IEntity[] = [];
   scene: Scene | null = null;
 
   constructor() {
@@ -44,7 +45,7 @@ export class GameState {
     this.gl = new GameLoop(this.stage);
   }
 
-  runScene() {
+  async runScene<T>(): Promise<T> {
     return this.scene?.run(this);
   }
   getImg(key: string) {
@@ -52,5 +53,17 @@ export class GameState {
       throw new Error(`Image ${key} not found`);
     }
     return this.images[key];
+  }
+
+  addEntity(e: IEntity) {
+    this._glbEntities[e.ID] = e;
+    this._glbEntities[e.ID].init();
+  }
+  removeEntity(e: IEntity) {
+    this._glbEntities[e.ID]?.destroy();
+    delete this._glbEntities[e.ID];
+  }
+  getEntities() {
+    return Object.values(this._glbEntities);
   }
 }

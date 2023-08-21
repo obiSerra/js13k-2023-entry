@@ -11,7 +11,7 @@ import { IEntity, IStage, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { Throttle, pXs } from "../lib/utils";
-import { Rechargeable } from "../services/Rechargeable";
+import { Rechargeable } from "../services/rechargeable";
 
 export const playerSprite: (images: any) => Sprite = images => {
   const p = images["player"];
