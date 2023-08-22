@@ -273,11 +273,15 @@ export class Player extends ComponentBaseEntity {
   }
 }
 const enemyFireThrottle = new Throttle(100);
+export type EnemyData = {
+  boltCost?: number;
+};
 export class Enemy extends ComponentBaseEntity {
   gs: GameState;
   fireCharge: Rechargeable = new Rechargeable(1000, 1000);
   firing: boolean = false;
-  constructor(gs: GameState, sprite: Sprite, pos: IVec) {
+  data: EnemyData = {};
+  constructor(gs: GameState, sprite: Sprite, pos: IVec, data: EnemyData = {}) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos);
@@ -285,6 +289,7 @@ export class Enemy extends ComponentBaseEntity {
     const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {});
     const gravity = new GravityComponent();
     this.gs = gs;
+    this.data = data;
 
     this.addComponent(position);
     this.addComponent(renderer);
@@ -344,7 +349,7 @@ export class Enemy extends ComponentBaseEntity {
   }
 
   magicBolt() {
-    const boltCost = 550;
+    const boltCost = this?.data?.boltCost || 550;
     if (this.fireCharge.current < boltCost) return;
     const pos = this.components["position"] as PositionComponent;
     const d = pos.direction * -400;

@@ -8,7 +8,7 @@ export const RUNNING_ST = "running";
 export const PAUSED_ST = "paused";
 
 export class GameLoop {
-  uFps = 1000 / 60;
+  uFps = 1000 / 70;
 
   debugInfo: HTMLElement;
   stage: IStage;

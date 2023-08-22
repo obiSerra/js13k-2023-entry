@@ -4,7 +4,7 @@ import { ComponentBaseEntity } from "./lib/entities";
 import { GameState } from "./lib/gameState";
 import { loadingScene } from "./scenes/loadingScene";
 import { menuScene } from "./scenes/menuScene";
-import { testScene } from "./scenes/testScene";
+import { mainScene } from "./scenes/mainScene";
 
 class PauseEntity extends ComponentBaseEntity {
   gs: GameState;
@@ -216,7 +216,7 @@ const displayEndGame = async (gs: GameState) =>
 
   while (gameState.session.lives > 0) {
     console.log("Running main scene");
-    gameState.scene = testScene();
+    gameState.scene = mainScene();
     setTimeout(async () => {
       if (showTutorial) {
         await displayTutorial(gameState);

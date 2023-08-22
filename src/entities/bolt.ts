@@ -6,17 +6,25 @@ import { GameState } from "../lib/gameState";
 import { Expire } from "../lib/utils";
 import { Player } from "./player";
 
+export type MagicBoltData = {
+  dmg?: number;
+  exp?: number;
+};
+
 export class MagicBolt extends ComponentBaseEntity {
   c: string;
   h: string | null = null;
-  expire: Expire = new Expire(1000, this.endTime.bind(this));
+  expire: Expire;
   gs: GameState;
-  constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string) {
+  data: MagicBoltData = { dmg: 10 };
+  constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string, data: MagicBoltData = {}) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, v, [400, 600]);
     this.gs = gs;
     this.c = creatorID;
+    this.data = { ...this.data, ...data };
+    this.expire = new Expire(this.data?.exp || 1000, this.endTime.bind(this));
 
     const renderer = new ImgRenderComponent(gs.images["static"].bolt);
     const box = new BoxColliderComponent([8, 8], (b: IEntity, d: any) => {
@@ -31,7 +39,7 @@ export class MagicBolt extends ComponentBaseEntity {
         if (this.c !== b.ID) {
           this.c = b.ID;
           console.log("hit player");
-          (b as Player)?.takeDamage(10);
+          (b as Player)?.takeDamage(this.data.dmg || 10);
         }
       }
     });
@@ -47,7 +55,6 @@ export class MagicBolt extends ComponentBaseEntity {
   }
 
   update(delta: number, gs: GameState): void {
-    // pos.maxMove[2]
     this.expire.update(delta);
 
     super.update(delta, gs);
