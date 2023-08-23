@@ -137,6 +137,8 @@ export class Player extends ComponentBaseEntity {
 
     if (pos.p[1] > 800) this.destroy();
 
+    gameState.session.pos = pos.p;
+
     if (pos.collisionSensors[2]?.d === 0) {
       this.onTheGround = true;
       this.jumpCharge.recharge(delta);

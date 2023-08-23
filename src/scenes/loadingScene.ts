@@ -84,6 +84,15 @@ const bolt: RenderFn = (ctx, pos) => {
   ctx.closePath();
 };
 
+
+// const background: RenderFn = (ctx, pos) => {
+//   ctx.beginPath();
+//   for (let i = 0; i < 1000; i += 100) {
+//     ctx.rect(0, i, 1000, 100);
+//     // ctx.fillStyle = i  200 "#000";
+//   }
+// }
+
 type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 
 const staticImages: ImgFnMap = { groundBlock: { d: [32, 32], f: groundBlock }, bolt: { d: [12, 12], f: bolt } };

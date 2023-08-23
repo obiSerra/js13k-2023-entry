@@ -169,6 +169,46 @@ class EndgameEntity extends ComponentBaseEntity {
   }
 }
 
+class Background extends ComponentBaseEntity {
+  gs: GameState;
+
+  constructor(gs: GameState) {
+    const { stage } = gs;
+    super(stage, []);
+    this.gs = gs;
+
+    const html = new HTMLComponent("#stage");
+
+    this.addComponent(html);
+  }
+
+  update(delta: number, gs?: GameState): void {
+    const [x, y] = gs?.session?.pos || [0, 0];
+
+    const bgs = {
+      "800": ["#1520A6", "#0A1172"],
+      "1600": ["#3944BC", "#1520A6"],
+      "3200": ["#0492C2", "#3944BC"],
+      Infinity: ["#63C5DA", "#0492C2"],
+    };
+
+    let c1 = [];
+    for (let k in bgs) {
+      const v = parseInt(k);
+      if (x < v) {
+        c1 = bgs[k];
+        break;
+      } else if (isNaN(v)) {
+        c1 = bgs[k];
+        break;
+      }
+    }
+
+    const color = `linear-gradient(${c1.join(",")})`;
+    gs.stage.canvas.style.backgroundImage = color;
+    // console.log(gs.session);
+  }
+}
 const displayTutorial = async (gs: GameState) =>
   new Promise(resolve => {
     const tutorial = new TutorialEntity(gs, () => {
@@ -202,6 +242,8 @@ const displayEndGame = async (gs: GameState) =>
 (async () => {
   const gameState = new GameState();
   gameState.session.lives = 3;
+
+  gameState.addEntity(new Background(gameState));
 
   gameState.scene = loadingScene();
   await gameState.runScene();

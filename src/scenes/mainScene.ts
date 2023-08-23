@@ -171,7 +171,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
   let v = 400;
   let enemies = 0;
   const tiles = [];
-  console.log(map.length);
+  console.log("Map length", map.length);
   for (let i = 0; i < map.length; i++) {
     const tile = map.tile(i);
 
@@ -196,14 +196,14 @@ const generateMap = (gs: GameState, scene: Scene) => {
 
       v += 32;
     }
-    if (tile === "a" || tile === "aa" || tile === "aaa") {
-      const data: EnemyData = {};
-      if (tile === "a") data.boltCost = 800;
-      else if (tile === "aa") data.boltCost = 550;
-      else data.boltCost = 300;
-      scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64], data));
-      enemies++;
-    }
+    // if (tile === "a" || tile === "aa" || tile === "aaa") {
+    //   const data: EnemyData = {};
+    //   if (tile === "a") data.boltCost = 800;
+    //   else if (tile === "aa") data.boltCost = 550;
+    //   else data.boltCost = 300;
+    //   scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64], data));
+    //   enemies++;
+    // }
 
     if (tile !== "_") {
       scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
@@ -249,6 +249,12 @@ export const mainScene = () => {
         generateMap(gs, scene);
 
         gl.onUpdate(delta => {
+          // console.log(gs.session.pos)
+          gs.getEntities()
+            .filter(e => typeof e.update === "function")
+            .forEach(e => e.update(delta, gs));
+            
+
           if (gs.status !== "running") return;
 
           const [x, y] = player.getComponent<PositionComponent>("position").p;

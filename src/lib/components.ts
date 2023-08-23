@@ -134,17 +134,17 @@ export class BoxColliderComponent implements IComponent {
   }
 
   // TODO Debug code, remove before release
-  onRender(e: IEntity, delta: number, c: IVec): void {
-    const [w, h] = this.box;
+  // onRender(e: IEntity, delta: number, c: IVec): void {
+  //   const [w, h] = this.box;
 
-    const [x, y] = this.boxPos;
-    const ctx = e.stage.ctx;
-    ctx.beginPath();
-    ctx.rect(x + c[0], y + c[1], w, h);
-    ctx.strokeStyle = "lime";
-    ctx.stroke();
-    ctx.closePath();
-  }
+  //   const [x, y] = this.boxPos;
+  //   const ctx = e.stage.ctx;
+  //   ctx.beginPath();
+  //   ctx.rect(x + c[0], y + c[1], w, h);
+  //   ctx.strokeStyle = "lime";
+  //   ctx.stroke();
+  //   ctx.closePath();
+  // }
 }
 
 export class SpriteRenderComponent implements IComponent {
