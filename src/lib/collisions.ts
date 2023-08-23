@@ -59,7 +59,7 @@ export const resolveCollisions = (entities: IEntity[]) => {
         }
         // Collide top
         for (let i = 0; i < dist; i++) {
-          if (isCollide([aX, aY - i], [aBox[0], 1], [bX, bY], bBox)) {
+          if (isCollide([aX, aY - i - 1], [aBox[0], 1], [bX, bY], bBox)) {
             if (i === 0) onCollide(b, "top");
             if (-i < (tpCollide?.d || 0)) {
               if (tpCollide === null) tpCollide = { d: 0, t: "" };
@@ -86,7 +86,7 @@ export const resolveCollisions = (entities: IEntity[]) => {
         }
         //collide left
         for (let i = 0; i < dist; i++) {
-          if (isCollide([aX - i, aY], [1, aBox[1]], [bX, bY], bBox)) {
+          if (isCollide([aX - i - 1, aY], [aBox[0], aBox[1]], [bX, bY], bBox)) {
             if (i === 0) {
               onCollide(b, "left");
             }

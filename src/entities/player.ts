@@ -3,6 +3,7 @@ import {
   BoxColliderComponent,
   GravityComponent,
   HTMLComponent,
+  ImgRenderComponent,
   KeyboardControlComponent,
   PositionComponent,
   SpriteRenderComponent,
@@ -37,6 +38,13 @@ export const enemySprite: (images: any) => Sprite = images => {
   };
 };
 
+export const demonSprite: (images: any) => Sprite = images => {
+  const d = images["demon"];
+  return {
+    idle: { frames: [d.idle, d.idle_1], changeTime: 300 },
+  };
+};
+
 class LifeBarComponent extends HTMLComponent {
   onInit(e: IEntity): void {
     super.onInit(e);
@@ -67,10 +75,10 @@ export class Player extends ComponentBaseEntity {
   firing: boolean = false;
   life: number = 100;
   onEnd: () => void;
-  constructor(gs: GameState, sprite: Sprite, lives: number, onEnd: () => void) {
+  constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
-    const position = new PositionComponent([stage.canvas.width / 2, stage.canvas.height / 2], [0, 0], [400, 400]);
+    const position = new PositionComponent(pos, [0, 0], [400, 400]);
     const renderer = new SpriteRenderComponent(sprite, "idle");
 
     const downListeners = {
@@ -359,5 +367,109 @@ export class Enemy extends ComponentBaseEntity {
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(boltCost);
+  }
+}
+
+export class LittleDemon extends ComponentBaseEntity {
+  gs: GameState;
+  triggered: boolean = false;
+  data: EnemyData = {};
+  energy: number = 50;
+  speed: number = 100;
+  maxDist: number = 500;
+  constructor(gs: GameState, sprite: Sprite, pos: IVec, data: any = {}) {
+    const { stage } = gs;
+    super(stage, []);
+
+    const position = new PositionComponent(pos, [0, 0], [400, 400]);
+    // const renderer = new ImgRenderComponent(gs.images["static"].demonRender);
+    
+    const renderer = new SpriteRenderComponent(sprite, "idle");
+    const box = new BoxColliderComponent([30, 30], (b: IEntity, d: any) => {
+      if (b.constructor.name === "Player" && !this.triggered) {
+        this.triggered = true;
+        gs.scene.removeEntity(this);
+
+        (b as Player)?.takeDamage(50);
+      }
+    });
+    box.posModifiers = [5, 5];
+    // box.solid = false;
+    const gravity = new GravityComponent();
+    this.gs = gs;
+    this.speed = data?.speed || this.speed;
+    this.maxDist = data?.maxDist || this.maxDist;
+    this.data = data;
+
+    this.addComponent(position);
+    this.addComponent(renderer);
+    this.addComponent(box);
+    this.addComponent(gravity);
+  }
+
+  update(delta: number, gs?: GameState): void {
+    this.action(delta, gs);
+
+    const pos = this.components["position"] as PositionComponent;
+    const rend = this.components["render"] as SpriteRenderComponent;
+
+    // if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
+    // if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
+
+    super.update(delta, gs);
+  }
+
+  action(delta: number, gs: GameState) {
+    const player = gs.scene.getEntities().find(e => e.constructor.name === "Player") as Player;
+    if (!player) return;
+    const [px, py] = player.getComponent<PositionComponent>("position").p;
+    const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
+    const pos = this.getComponent<PositionComponent>("position");
+    const {
+      p: [x, y],
+      direction: d,
+    } = pos;
+    const [w, h] = this.getComponent<BoxColliderComponent>("collider").box;
+
+    const [[cpx, cpy], [cx, cy]] = [
+      [px + pw / 2, py + ph / 2],
+      [x + w / 2, y + h / 2],
+    ];
+
+    const dist = Math.sqrt(Math.pow(cpx - cx, 2) + Math.pow(cpy - cy, 2));
+    const vDist = Math.sqrt(Math.pow(cpy - cy, 2));
+
+    if (vDist > 20) return;
+
+    if (px < x && d !== 1) pos.direction = 1;
+    else if (px > x && d !== -1) pos.direction = -1;
+
+    if (dist < this.maxDist) {
+      console.log(this.speed * pos.direction, 0)
+      pos.accelerate([this.speed * -pos.direction, 0]);
+    }
+    // console.log(dist, vDist);
+
+    // Turn
+
+    // // Attack - to move
+
+    // if (this.fireCharge.current < 350) this.firing = false;
+    // const startBurst = this.firing || this.fireCharge.isFull;
+    // // const startBurst = true;
+
+    // if (dist < 600 && vDist < 100 && startBurst) {
+    //   this.firing = true;
+    //   enemyFireThrottle.call(delta, () => {
+    //     this.magicBolt();
+    //   });
+    // } else {
+    // }
+  }
+  takeDamage(dmg: number) {
+    const v = this.getComponent<PositionComponent>("position").v;
+    this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -200]);
+    this.energy -= dmg;
+    if (this.energy <= 0) this.gs.scene.removeEntity(this);
   }
 }

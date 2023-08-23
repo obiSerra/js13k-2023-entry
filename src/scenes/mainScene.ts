@@ -10,7 +10,7 @@ import { IEntity, IRenderComponent, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { isInView } from "../lib/utils";
-import { Enemy, EnemyData, Player, enemySprite, playerSprite } from "../entities/player";
+import { Enemy, EnemyData, LittleDemon, Player, demonSprite, enemySprite, playerSprite } from "../entities/player";
 // import { LifeBar } from "../entities/life";
 
 class Ground extends ComponentBaseEntity {
@@ -61,57 +61,6 @@ class Lives extends ComponentBaseEntity {
   }
 }
 
-const tilePercentage = (lastTiles: any[], t: number) => {
-  if (t < 50) return "block";
-  const spec = {
-    highBlock: 0,
-    raise: 0,
-    enemy: 0,
-    block: 1,
-    hole: 0,
-  };
-  const l = lastTiles.length;
-  const last = lastTiles[l - 1];
-
-  const blocks = lastTiles.filter((t: any) => t === "block").length;
-
-  let isHole = last === "hole";
-  let holeL = isHole ? 1 : 0;
-
-  for (let i = l - 1; i >= 0; i--) {
-    const e = lastTiles[i];
-    if (e === "hole" && isHole) {
-      holeL++;
-    } else {
-      isHole = false;
-    }
-  }
-
-  if (last === "hole") {
-    if (holeL < 7) {
-      spec.hole = 0.8;
-      spec.block = 0.2;
-    } else if (holeL < 20) {
-      spec.hole = 0.5;
-      spec.block = 0.5;
-    } else {
-      spec.hole = 0;
-      spec.block = 1;
-    }
-  } else if (blocks === l) {
-    spec.hole = 1;
-    spec.block = 0;
-  }
-
-  let sum = 0;
-  const r = Math.random();
-
-  for (let i in spec) {
-    sum += spec[i];
-    if (r <= sum) return i;
-  }
-};
-
 class Map {
   raw: string;
   _parsed: any[];
@@ -152,23 +101,28 @@ const generateMap = (gs: GameState, scene: Scene) => {
   const sections = [
     "30.",
     "3_",
+    "15.,1b",
+    "10.",
+    "3_",
     "10.,2|",
     "20.,1a",
     "10.,2|",
     "5.,3_,5.,5_",
     "5.,3|",
+    "20.,2bb,5.",
     "10.,1*,1-,1|,10.,1a",
     "10.1*,1|,10.,1a",
     "3.,2|,3.",
     "10.,3_,5.,1a,1.,5_",
     "3.,3|,3.",
     "5.,3_,2.,3_,5.,1a,1.,5_",
+    "20.,3bbb,5.",
     "10.,3|,20.,1aaa",
   ];
 
   const map = new Map(sections.join(","));
   let cnt = 0;
-  let v = 400;
+  let v = Math.floor(gs.stage.canvas.height / 2);
   let enemies = 0;
   const tiles = [];
   console.log("Map length", map.length);
@@ -196,14 +150,21 @@ const generateMap = (gs: GameState, scene: Scene) => {
 
       v += 32;
     }
-    // if (tile === "a" || tile === "aa" || tile === "aaa") {
-    //   const data: EnemyData = {};
-    //   if (tile === "a") data.boltCost = 800;
-    //   else if (tile === "aa") data.boltCost = 550;
-    //   else data.boltCost = 300;
-    //   scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64], data));
-    //   enemies++;
-    // }
+    if (tile === "b" || tile === "bb" || tile === "bbb") {
+      const data: any = {};
+      if (tile === "b") data.speed = 10;
+      else if (tile === "bb") data.speed = 50;
+      else data.speed = 100;
+      scene.addEntity(new LittleDemon(gs, demonSprite(gs.images), [i * 32, v - 64], data));
+    }
+    if (tile === "a" || tile === "aa" || tile === "aaa") {
+      const data: EnemyData = {};
+      if (tile === "a") data.boltCost = 800;
+      else if (tile === "aa") data.boltCost = 550;
+      else data.boltCost = 300;
+      scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64], data));
+      enemies++;
+    }
 
     if (tile !== "_") {
       scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
@@ -236,8 +197,8 @@ export const mainScene = () => {
     async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene }> =>
       new Promise((resolve, reject) => {
         const { gl } = gs;
-
-        const player = new Player(gs, playerSprite(gs.images), 3, () => {
+        const v: IVec = [Math.floor(gs.stage.canvas.height / 2), Math.floor(gs.stage.canvas.width / 2)];
+        const player = new Player(gs, playerSprite(gs.images), [400, -10], gs.session.lives, () => {
           resolve({ gs, scene });
         });
 
@@ -253,7 +214,6 @@ export const mainScene = () => {
           gs.getEntities()
             .filter(e => typeof e.update === "function")
             .forEach(e => e.update(delta, gs));
-            
 
           if (gs.status !== "running") return;
 

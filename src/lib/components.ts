@@ -89,6 +89,7 @@ export class PositionComponent implements IComponent {
       }
 
       if (mvX > 0 && lT(mxR, mvX)) {
+      
         mvX = mxR * Math.sign(mvX);
         vx = 0;
       } else if (mvX < 0 && lT(mxL, mvX)) {
@@ -179,6 +180,9 @@ export class SpriteRenderComponent implements IComponent {
 
     const an = this.sprite[this.currentAnimation];
     this.time += t;
+
+    if (!an) console.error(`Animation ${this.currentAnimation} not found`)
+
     if (this.time > an.changeTime) {
       this.time = 0;
       this.currentFrame = (this.currentFrame + 1) % an.frames.length;

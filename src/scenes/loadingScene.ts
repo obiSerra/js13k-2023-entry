@@ -1,4 +1,4 @@
-import { player } from "../assets/pxImages";
+import { player, littleDemonPx } from "../assets/pxImages";
 import { HTMLComponent } from "../lib/components";
 import { IVec, ImagePxsRawMap, RenderFn } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
@@ -53,6 +53,7 @@ const pxImages: [string, ImagePxsRawMap][] = [
     },
   ],
   ["enemy", colorizeImages(basicEnemyColors, player)],
+  ["demon", littleDemonPx],
 ];
 
 const groundBlock: RenderFn = (ctx, pos) => {
@@ -84,7 +85,6 @@ const bolt: RenderFn = (ctx, pos) => {
   ctx.closePath();
 };
 
-
 // const background: RenderFn = (ctx, pos) => {
 //   ctx.beginPath();
 //   for (let i = 0; i < 1000; i += 100) {
@@ -95,7 +95,10 @@ const bolt: RenderFn = (ctx, pos) => {
 
 type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 
-const staticImages: ImgFnMap = { groundBlock: { d: [32, 32], f: groundBlock }, bolt: { d: [12, 12], f: bolt } };
+const staticImages: ImgFnMap = {
+  groundBlock: { d: [32, 32], f: groundBlock },
+  bolt: { d: [12, 12], f: bolt },
+};
 
 class LoadingBar extends ComponentBaseEntity {
   loadedImages: { [key: string]: { [key: string]: HTMLImageElement } } = { static: {} };

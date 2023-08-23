@@ -4,7 +4,7 @@ import { IVec, IEntity } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
 import { Expire } from "../lib/utils";
-import { Player } from "./player";
+import { LittleDemon, Player } from "./player";
 
 export type MagicBoltData = {
   dmg?: number;
@@ -28,20 +28,23 @@ export class MagicBolt extends ComponentBaseEntity {
 
     const renderer = new ImgRenderComponent(gs.images["static"].bolt);
     const box = new BoxColliderComponent([8, 8], (b: IEntity, d: any) => {
+      if (b.ID === this.c) return;
       if (b.constructor.name === "Ground") {
-        gs.scene.removeEntity(this);
         // gs.scene.removeEntity(b);
-      } else if (b.constructor.name === "Enemy" && b.ID !== this.c) {
-        gs.scene.removeEntity(this);
+      } else if (b.constructor.name === "Enemy") {
         gs.scene.removeEntity(b);
-      } else if (b.constructor.name === "Player" && b.ID !== this.c) {
-        gs.scene.removeEntity(this);
+      } else if (b.constructor.name === "LittleDemon") {
+        (b as LittleDemon).takeDamage(this.data.dmg || 10);
+
+        // gs.scene.removeEntity(b);
+      } else if (b.constructor.name === "Player") {
         if (this.c !== b.ID) {
           this.c = b.ID;
           console.log("hit player");
           (b as Player)?.takeDamage(this.data.dmg || 10);
         }
       }
+      gs.scene.removeEntity(this);
     });
     box.solid = false;
     box.posModifiers = [2, 2];
