@@ -23,4 +23,4 @@ rm -rf submission/
 
 echo ""
 echo "Submission size:"
-du -sh submission.zip
+stat -f%z submission.zip
