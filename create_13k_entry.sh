@@ -7,8 +7,23 @@ rm -f submission.zip
 # Remove current build dir
 rm -rf dist/
 
+
+node removeModules.js
+
+echo "Manually fix the file [enter to continue]?"
+read varname
+cp src/index.ts src/index.ts.bak
+cp src/index_concat.ts src/index.ts
+
+
 # Build with webpack
 npm run dist
+
+
+# Remove temporary files
+mv src/index.ts.bak src/index.ts
+rm -f index.ts.bak
+rm -f index_concat.ts
 
 # Create submission dir
 cp -r dist/ submission/
