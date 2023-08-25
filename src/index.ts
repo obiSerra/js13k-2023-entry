@@ -5,6 +5,7 @@ import { GameState } from "./lib/gameState";
 import { loadingScene } from "./scenes/loadingScene";
 import { menuScene } from "./scenes/menuScene";
 import { mainScene } from "./scenes/mainScene";
+import { getProgress } from "./lib/utils";
 
 class PauseEntity extends ComponentBaseEntity {
   gs: GameState;
@@ -68,15 +69,6 @@ the Great Khan lies mortally would by an enemy arrow. <br> Only you, his shaman,
 
 </p>
 <button id="skip">skip</button>
-</div>`;
-
-const lostLife = `<div>
-<p>
-The spirits may help you once more.
-</p>
-<p>
-
-<button id="skip">continue</button>
 </div>`;
 
 const endGame = `<div>
@@ -185,8 +177,8 @@ class Background extends ComponentBaseEntity {
   update(delta: number, gs?: GameState): void {
     const [x, y] = gs?.session?.pos || [0, 0];
     const bgs = [
-      [400, ["#1520A6", "#0A1172"]],
-      [200, ["#3944BC", "#1520A6"]],
+      [800, ["#1520A6", "#0A1172"]],
+      [400, ["#3944BC", "#1520A6"]],
       [0, ["#0492C2", "#3944BC"]],
       [-10000, ["#63C5DA", "#0492C2"]],
     ];
@@ -208,6 +200,7 @@ class Background extends ComponentBaseEntity {
     // console.log(gs.session);
   }
 }
+
 const displayTutorial = async (gs: GameState) =>
   new Promise(resolve => {
     const tutorial = new TutorialEntity(gs, () => {
@@ -224,6 +217,15 @@ const displayMsg = async (gs: GameState) =>
       resolve(null);
       // gs.removeEntity(tutorial);
     });
+    const lostLife = `<div>
+<p>
+You moved ${getProgress(gs.session.pos[0])} steps.
+<br>The spirits may help you once more.
+</p>
+<p>
+
+<button id="skip">continue</button>
+</div>`;
     tutorial.setContent(lostLife);
     gs.addEntity(tutorial);
   });

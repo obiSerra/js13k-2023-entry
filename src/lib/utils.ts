@@ -1,12 +1,13 @@
 import { PositionComponent } from "./components";
 import { IEntity, IVec } from "./contracts";
+import { ComponentBaseEntity } from "./entities";
 
 // Movement dependent on delta-time
 export const pXs = (s: number, d: number) => Math.round(s * (d / 1000));
 export const multiplyVecScalar = (vec: IVec, scalar: number): IVec => vec.map(v => v * scalar) as IVec;
 export const sumVec = (vec1: IVec, vec2: IVec) => vec1.map((v, i) => v + vec2[i]) as IVec;
 
-export const isInView = (e: IEntity, c: IVec, canvas: HTMLCanvasElement) => {
+export const isInView = (e: ComponentBaseEntity, c: IVec, canvas: HTMLCanvasElement) => {
   const [cx, cy] = c;
   const p = e.getComponent<PositionComponent>("position")?.p;
   if (!p) return true;
@@ -57,3 +58,7 @@ export class Expire {
     }
   }
 }
+
+export const getProgress = x => {
+  return Math.floor((x - 400) / 100);
+};

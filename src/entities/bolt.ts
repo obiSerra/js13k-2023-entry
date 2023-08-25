@@ -27,7 +27,7 @@ export class MagicBolt extends ComponentBaseEntity {
     this.expire = new Expire(this.data?.exp || 1000, this.endTime.bind(this));
 
     const renderer = new ImgRenderComponent(gs.images["static"].bolt);
-    const box = new BoxColliderComponent([8, 8], (b: IEntity, d: any) => {
+    const box = new BoxColliderComponent([8, 8], (b: ComponentBaseEntity, d: any) => {
       if (b.ID === this.c) return;
       if (b.constructor.name === "Ground") {
         // gs.scene.removeEntity(b);

@@ -1,4 +1,5 @@
 import { IEntity, IVec } from "./contracts";
+import { ComponentBaseEntity } from "./entities";
 import { GameLoop } from "./gameLoop";
 import { Stage } from "./stage";
 
@@ -6,7 +7,7 @@ type SceneContent = (gs: GameState, scene: Scene) => void;
 
 export class Scene {
   content: SceneContent;
-  _entities: IEntity[] = [];
+  _entities: ComponentBaseEntity[] = [];
 
   cameraPos: IVec = [0, 0];
 
@@ -15,14 +16,14 @@ export class Scene {
   }
 
   async run<T>(gameState: GameState): Promise<T> {
-    return await this.content(gameState, this) as T;
+    return (await this.content(gameState, this)) as T;
   }
 
-  addEntity(e: IEntity) {
+  addEntity(e: ComponentBaseEntity) {
     this._entities[e.ID] = e;
     this._entities[e.ID].init();
   }
-  removeEntity(e: IEntity) {
+  removeEntity(e: ComponentBaseEntity) {
     this._entities[e.ID]?.destroy();
     delete this._entities[e.ID];
   }
@@ -37,7 +38,7 @@ export class GameState {
   images: { [key: string]: { [key: string]: HTMLImageElement } } = {};
   session: { [key: string]: any } = {};
   status: string = "init";
-  _glbEntities: IEntity[] = [];
+  _glbEntities: ComponentBaseEntity[] = [];
   scene: Scene | null = null;
 
   constructor() {
@@ -55,11 +56,11 @@ export class GameState {
     return this.images[key];
   }
 
-  addEntity(e: IEntity) {
+  addEntity(e: ComponentBaseEntity) {
     this._glbEntities[e.ID] = e;
     this._glbEntities[e.ID].init();
   }
-  removeEntity(e: IEntity) {
+  removeEntity(e: ComponentBaseEntity) {
     this._glbEntities[e.ID]?.destroy();
     delete this._glbEntities[e.ID];
   }

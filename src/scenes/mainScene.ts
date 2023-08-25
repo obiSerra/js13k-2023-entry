@@ -41,11 +41,11 @@ class Ground extends ComponentBaseEntity {
   }
 }
 class LivesCountComponent extends HTMLComponent {
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     super.onInit(e);
     this.show();
   }
-  onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
+  onUpdate(e: ComponentBaseEntity, delta: number, gameState?: GameState): void {
     this.el.innerHTML = `<span>${gameState?.session?.lives || ""}</span>`;
   }
 }
@@ -241,8 +241,8 @@ export const mainScene = () => {
 
           toRender.sort(
             (a, b) =>
-              (b.components["render"] as IRenderComponent).renderPriority -
-              (a.components["render"] as IRenderComponent).renderPriority
+              b.getComponent<IRenderComponent>("render").renderPriority -
+              a.getComponent<IRenderComponent>("render").renderPriority
           );
 
           toRender.forEach(e => e.render(t, [cx, cy]));

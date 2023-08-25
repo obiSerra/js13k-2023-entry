@@ -1,18 +1,17 @@
-import { MagicBolt } from "./bolt";
 import {
   BoxColliderComponent,
   GravityComponent,
   HTMLComponent,
-  ImgRenderComponent,
   KeyboardControlComponent,
   PositionComponent,
   SpriteRenderComponent,
 } from "../lib/components";
-import { IEntity, IStage, IVec, Sprite } from "../lib/contracts";
+import { IEntity, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
-import { GameState, Scene } from "../lib/gameState";
-import { Throttle, pXs } from "../lib/utils";
+import { GameState } from "../lib/gameState";
+import { Throttle, getProgress } from "../lib/utils";
 import { Rechargeable } from "../services/rechargeable";
+import { MagicBolt } from "./bolt";
 
 export const playerSprite: (images: any) => Sprite = images => {
   const p = images["player"];
@@ -46,11 +45,11 @@ export const demonSprite: (images: any) => Sprite = images => {
 };
 
 class LifeBarComponent extends HTMLComponent {
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     super.onInit(e);
     this.show();
   }
-  onUpdate(e: IEntity, delta: number, gameState?: GameState): void {
+  onUpdate(e: ComponentBaseEntity, delta: number, gameState?: GameState): void {
     const life = (e as Player).life;
     const bars = Math.floor(life / 10);
     this.el.innerHTML = "";
@@ -58,6 +57,19 @@ class LifeBarComponent extends HTMLComponent {
     for (let i = 0; i < bars; i++) {
       this.el.innerHTML += `<div class="bar"></div>`;
     }
+  }
+}
+
+class Progression extends HTMLComponent {
+  onInit(e: ComponentBaseEntity): void {
+    super.onInit(e);
+    this.show();
+  }
+  onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
+    const [x, y] = gs.session.pos;
+    const progress = getProgress(x);
+    this.el.innerHTML = `${progress}`;
+    console.log(gs.session);
   }
 }
 const fireThrottle = new Throttle(150);
@@ -123,7 +135,9 @@ export class Player extends ComponentBaseEntity {
 
     const control = new KeyboardControlComponent(downListeners, upListeners);
     const lifeBar = new LifeBarComponent("#life");
-    const box = new BoxColliderComponent([36, 48], (b: IEntity, c: any) => {});
+    const progression = new Progression("#progression");
+
+    const box = new BoxColliderComponent([36, 48], (b: ComponentBaseEntity, c: any) => {});
     box.posModifiers = [8, 0];
     const gravity = new GravityComponent();
     this.gs = gs;
@@ -135,6 +149,7 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(box);
     this.addComponent(gravity);
     this.addComponent(lifeBar);
+    this.addComponent(progression);
   }
 
   get invulnerable() {
@@ -187,8 +202,8 @@ export class Player extends ComponentBaseEntity {
   }
   walkLeft() {
     // this.status = "walk-left";
-    const pos = this.components["position"] as PositionComponent;
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
     if (rend.currentAnimation !== "runLeft") rend.setupAnimation("runLeft");
     let accSpeed = -this.speed;
 
@@ -203,8 +218,8 @@ export class Player extends ComponentBaseEntity {
   }
   walkRight() {
     // this.status = "walk-right";
-    const pos = this.components["position"] as PositionComponent;
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
     if (rend.currentAnimation !== "run") rend.setupAnimation("run");
     let accSpeed = this.speed;
 
@@ -220,7 +235,7 @@ export class Player extends ComponentBaseEntity {
 
   jump() {
     // this.status = "jump";
-    const pos = this.components["position"] as PositionComponent;
+    const pos = this.getComponent<PositionComponent>("position");
     if (this.jumpCharge.isFull && this.onTheGround) {
       pos.accelerate([0, this.jumpSpeed]);
       this.jumpCharge.useAll();
@@ -228,8 +243,8 @@ export class Player extends ComponentBaseEntity {
   }
   stand() {
     // this.status = "idle";
-    const pos = this.components["position"] as PositionComponent;
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
 
     if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
     if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
@@ -245,7 +260,7 @@ export class Player extends ComponentBaseEntity {
   duck() {
     // this.status = "crouch";
     const pos = this.getComponent<PositionComponent>("position");
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const rend = this.getComponent<SpriteRenderComponent>("render");
     const d = pos.direction;
     if (d === -1 && rend.currentAnimation !== "duck") rend.setupAnimation("duck");
     else if (d === 1 && rend.currentAnimation !== "duckLeft") rend.setupAnimation("duckLeft");
@@ -260,7 +275,7 @@ export class Player extends ComponentBaseEntity {
 
   magicBolt() {
     if (this.fireCharge.current < 75 || this.rolling) return;
-    const pos = this.components["position"] as PositionComponent;
+    const pos = this.getComponent<PositionComponent>("position");
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
@@ -276,7 +291,7 @@ export class Player extends ComponentBaseEntity {
   takeDamage(damage: number) {
     if (this.invulnerable) return;
 
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const rend = this.getComponent<SpriteRenderComponent>("render");
     if (rend.currentAnimation !== "dmg") rend.setupAnimation("dmg");
     this.life -= damage;
     if (this.life <= 0) this.destroy();
@@ -296,7 +311,7 @@ export class Enemy extends ComponentBaseEntity {
     super(stage, []);
     const position = new PositionComponent(pos);
     const renderer = new SpriteRenderComponent(sprite, "idle");
-    const box = new BoxColliderComponent([48, 48], (b: IEntity, c: any) => {});
+    const box = new BoxColliderComponent([48, 48], (b: ComponentBaseEntity, c: any) => {});
     const gravity = new GravityComponent();
     this.gs = gs;
     this.data = data;
@@ -310,8 +325,8 @@ export class Enemy extends ComponentBaseEntity {
   update(delta: number, gs: GameState): void {
     this.action(delta, gs);
     this.fireCharge.recharge(delta);
-    const pos = this.components["position"] as PositionComponent;
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
 
     if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
     if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
@@ -361,7 +376,7 @@ export class Enemy extends ComponentBaseEntity {
   magicBolt() {
     const boltCost = this?.data?.boltCost || 550;
     if (this.fireCharge.current < boltCost) return;
-    const pos = this.components["position"] as PositionComponent;
+    const pos = this.getComponent<PositionComponent>("position");
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
@@ -383,9 +398,9 @@ export class LittleDemon extends ComponentBaseEntity {
 
     const position = new PositionComponent(pos, [0, 0], [400, 400]);
     // const renderer = new ImgRenderComponent(gs.images["static"].demonRender);
-    
+
     const renderer = new SpriteRenderComponent(sprite, "idle");
-    const box = new BoxColliderComponent([30, 30], (b: IEntity, d: any) => {
+    const box = new BoxColliderComponent([30, 30], (b: ComponentBaseEntity, d: any) => {
       if (b.constructor.name === "Player" && !this.triggered) {
         this.triggered = true;
         gs.scene.removeEntity(this);
@@ -410,8 +425,8 @@ export class LittleDemon extends ComponentBaseEntity {
   update(delta: number, gs?: GameState): void {
     this.action(delta, gs);
 
-    const pos = this.components["position"] as PositionComponent;
-    const rend = this.components["render"] as SpriteRenderComponent;
+    const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
 
     // if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
     // if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
@@ -445,7 +460,7 @@ export class LittleDemon extends ComponentBaseEntity {
     else if (px > x && d !== -1) pos.direction = -1;
 
     if (dist < this.maxDist) {
-      console.log(this.speed * pos.direction, 0)
+      console.log(this.speed * pos.direction, 0);
       pos.accelerate([this.speed * -pos.direction, 0]);
     }
     // console.log(dist, vDist);

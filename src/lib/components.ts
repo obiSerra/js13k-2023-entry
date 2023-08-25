@@ -1,15 +1,5 @@
-import {
-  IComponent,
-  IVec,
-  IEntity,
-  ComponentType,
-  Sprite,
-  IStage,
-  Note,
-  NodeDataFixed,
-  IVecNullable,
-  CollisionSensors,
-} from "./contracts";
+import { IComponent, IVec, ComponentType, Sprite, IStage, Note, NodeDataFixed, CollisionSensors } from "./contracts";
+import { ComponentBaseEntity } from "./entities";
 import { GameState } from "./gameState";
 import { Sound, noteFrequencies } from "./soundComponent";
 import { pXs, sumVec } from "./utils";
@@ -51,7 +41,7 @@ export class PositionComponent implements IComponent {
     this.a[0] = dir[0] ? 0 : this.a[0];
     this.a[1] = dir[1] ? 0 : this.a[1];
   }
-  onUpdate(e: IEntity, delta: number, gs?: GameState): void {
+  onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
     const { solid, onCollide } = e.getComponent<BoxColliderComponent>("collider");
 
     const maxSpeed = this.maxSpeed;
@@ -89,7 +79,6 @@ export class PositionComponent implements IComponent {
       }
 
       if (mvX > 0 && lT(mxR, mvX)) {
-      
         mvX = mxR * Math.sign(mvX);
         vx = 0;
       } else if (mvX < 0 && lT(mxL, mvX)) {
@@ -111,31 +100,31 @@ export class BoxColliderComponent implements IComponent {
   boxPos: IVec;
   posModifiers: IVec = [0, 0];
   trigger: boolean;
-  onCollide?: (e: IEntity, c: any) => void;
-  onCollideFn?: (e: IEntity, c: any) => void;
+  onCollide?: (e: ComponentBaseEntity, c: any) => void;
+  onCollideFn?: (e: ComponentBaseEntity, c: any) => void;
   isColliding: boolean;
-  collisions: { e: IEntity; c: CollisionSensors }[] = [];
+  collisions: { e: ComponentBaseEntity; c: CollisionSensors }[] = [];
   solid: boolean = true;
 
-  constructor(box: IVec, onCollide?: (e: IEntity, b: CollisionSensors) => void) {
+  constructor(box: IVec, onCollide?: (e: ComponentBaseEntity, b: CollisionSensors) => void) {
     this.type = "collider";
     this.box = box;
     this.trigger = true;
     this.onCollideFn = onCollide;
     this.isColliding = false;
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     this.onCollide = this.onCollideFn?.bind(e) || null;
     this.boxPos = e.getComponent<PositionComponent>("position").p;
   }
 
-  onUpdate(e: IEntity, delta: number, gs?: GameState): void {
+  onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
     const [x, y] = e.getComponent<PositionComponent>("position").p;
     this.boxPos = [x + this.posModifiers[0], y + this.posModifiers[1]];
   }
 
   // TODO Debug code, remove before release
-  // onRender(e: IEntity, delta: number, c: IVec): void {
+  // onRender(e: ComponentBaseEntity, delta: number, c: IVec): void {
   //   const [w, h] = this.box;
 
   //   const [x, y] = this.boxPos;
@@ -165,7 +154,7 @@ export class SpriteRenderComponent implements IComponent {
     this.renderPriority = renderPriority;
     this.setupAnimation(defaultAnimation);
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     this.stage = e.stage;
   }
   setupAnimation(animationName: string) {
@@ -173,15 +162,15 @@ export class SpriteRenderComponent implements IComponent {
     this.currentFrame = 0;
     this.currentAnimation = animationName;
   }
-  onRender(e: IEntity, t: number, c: IVec): void {
-    const pos = (e.components["position"] as PositionComponent).p;
+  onRender(e: ComponentBaseEntity, t: number, c: IVec): void {
+    const pos = e.getComponent<PositionComponent>("position").p;
     if (!pos) throw new Error("PositionComponent not found");
     const [x, y] = pos;
 
     const an = this.sprite[this.currentAnimation];
     this.time += t;
 
-    if (!an) console.error(`Animation ${this.currentAnimation} not found`)
+    if (!an) console.error(`Animation ${this.currentAnimation} not found`);
 
     if (this.time > an.changeTime) {
       this.time = 0;
@@ -214,12 +203,12 @@ export class ImgRenderComponent implements IComponent {
     this.image = image;
     this.renderPriority = renderPriority;
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     this.stage = e.stage;
   }
 
-  onRender(e: IEntity, delta: number, c: IVec): void {
-    const pos = (e.components["position"] as PositionComponent).p;
+  onRender(e: ComponentBaseEntity, delta: number, c: IVec): void {
+    const pos = e.getComponent<PositionComponent>("position").p;
     this.stage.ctx.drawImage(this.image, pos[0] + c[0], pos[1] + c[1]);
   }
 }
@@ -234,8 +223,8 @@ export class GravityComponent implements IComponent {
     this.gravity = gravity * 9.8;
     this.ev = !!ev ? ev : gravity * 100;
   }
-  onUpdate(e: IEntity, delta: number): void {
-    const box = e.components["collider"] as BoxColliderComponent;
+  onUpdate(e: ComponentBaseEntity, delta: number): void {
+    const box = e.getComponent<BoxColliderComponent>("collider");
     const pos = e.getComponent<PositionComponent>("position");
     const {
       p: [x, y],
@@ -246,7 +235,7 @@ export class GravityComponent implements IComponent {
     // const accV = Math.max(v[1] + mXs(this.gravity, delta), th  is.ev);
 
     // const accV = v[1] + pXs(this.gravity, delta);
-    // (e.components["position"] as PositionComponent).v = [v[0], accV];
+    // (e.getComponent<PositionComponent).v = [v[0], accV]>("position")
   }
 }
 
@@ -322,7 +311,7 @@ export class MenuComponent implements IComponent {
   addListener(sel: string, cb: (e: Event) => void, eventType: string = "click") {
     this.behavior[sel] = { cb, t: eventType };
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     for (let k of Object.keys(this.behavior)) {
       const el = this.el.querySelector(k);
       const b = this.behavior[k];
@@ -338,7 +327,7 @@ export class MenuComponent implements IComponent {
   hide() {
     this.el.classList.add("h");
   }
-  onTerminate(e: IEntity): void {
+  onTerminate(): void {
     this.hide();
   }
 }
@@ -352,7 +341,7 @@ export class HTMLComponent implements IComponent {
     this.type = "html";
     this.selector = selector;
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     this.el = document.querySelector(this.selector);
     if (!this.el) throw new Error(`Element ${this.selector} not found`);
   }
@@ -376,7 +365,7 @@ export class KeyboardControlComponent2 implements IComponent {
     this.clickedDown = new Set();
     this.clickedUp = new Set();
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     document.addEventListener("keydown", e => {
       this.clickedDown.add(e.key);
     });
@@ -398,7 +387,7 @@ export class KeyboardControlComponent implements IComponent {
     this.downListener = downEvtLst;
     this.upListener = upEvtLst;
   }
-  onInit(e: IEntity): void {
+  onInit(e: ComponentBaseEntity): void {
     document.addEventListener("keydown", e => {
       for (let k of Object.keys(this.downListener)) {
         if (k === e.key) this.downListener[k](e);

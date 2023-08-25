@@ -1,5 +1,6 @@
 import { BoxColliderComponent, PositionComponent } from "./components";
 import { CollisionSensor, IEntity, IVec } from "./contracts";
+import { ComponentBaseEntity } from "./entities";
 
 export const isCollide = (a: IVec, as: IVec, b: IVec, bs: IVec) => {
   const [ax, ay] = a;
@@ -10,7 +11,7 @@ export const isCollide = (a: IVec, as: IVec, b: IVec, bs: IVec) => {
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 };
 
-export const resolveCollisions = (entities: IEntity[]) => {
+export const resolveCollisions = (entities: ComponentBaseEntity[]) => {
   const triggers = entities.filter(e => !!e.getComponent<BoxColliderComponent>("collider").onCollide);
   for (let i = 0; i < triggers.length; i++) {
     const a = triggers[i];

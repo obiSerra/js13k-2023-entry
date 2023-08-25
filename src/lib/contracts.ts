@@ -1,3 +1,4 @@
+import { ComponentBaseEntity } from "./entities";
 import { GameState } from "./gameState";
 
 export type IVec = [number, number];
@@ -7,10 +8,10 @@ export type ComponentType = "position" | "control" | "collider" | "render" | "gr
 
 export interface IComponent {
   type: ComponentType;
-  onInit?(e: IEntity): void;
-  onRender?(e: IEntity, delta: number, c: IVec): void;
-  onUpdate?(e: IEntity, delta: number, gs?: GameState): void;
-  onTerminate?(e: IEntity): void;
+  onInit?(e: ComponentBaseEntity): void;
+  onRender?(e: ComponentBaseEntity, delta: number, c: IVec): void;
+  onUpdate?(e: ComponentBaseEntity, delta: number, gs?: GameState): void;
+  onTerminate?(e: ComponentBaseEntity): void;
 }
 
 export interface IRenderComponent extends IComponent {
@@ -24,7 +25,7 @@ export interface RenderComponent extends IComponent {
 export interface IEntity {
   ID: string;
   stage: IStage;
-  components: { [key: string]: IComponent };
+  components: { [key: string]: IComponent[] };
   pos?: IVec;
   v?: IVec;
   box?: IVec;
@@ -37,10 +38,11 @@ export interface IEntity {
   update?(delta: number, gs?: GameState): void;
   onUpdateStart?(delta: number, gs?: GameState): void;
   onUpdateEnd?(delta: number, gs?: GameState): void;
-  onCollide(e: IEntity, c: CollisionSensors): void;
+  onCollide(e: ComponentBaseEntity, c: CollisionSensors): void;
   initComponent?(c: string): void;
-  componentList?(): IComponent[];
+  componentList?(): IComponent[][];
   addComponent?(c: IComponent): void;
+  getComponents<T extends IComponent>(c: string): T[];
   getComponent<T extends IComponent>(c: string): T;
 }
 
