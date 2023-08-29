@@ -1,4 +1,4 @@
-import { player, littleDemonPx } from "../assets/pxImages";
+import { littleDemonPx, shaman } from "../assets/pxImages";
 import { HTMLComponent } from "../lib/components";
 import { IVec, ImagePxsRawMap, RenderFn } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
@@ -7,15 +7,28 @@ import { colorizeImages, flipImage, genDrawCharacter, hydrateImage, preRender } 
 import { Stage } from "../lib/stage";
 import { multiplyVecScalar } from "../lib/utils";
 
-const basicEnemyColors = {
-  white: ["#2a2203"],
-  lightgrey: ["#f9c4b4", "#c22828"],
-  black: ["#1d7ba7"],
+const damagedColors = {
+  red: [
+    "#642209",
+    "#e31937",
+    "#000000",
+    "#f6f4f1",
+    "#006f46",
+    "#ffe417",
+    "#ffffff",
+    "#f9f7f5",
+    "#3098c1",
+    "#187194",
+    "#aad1e7",
+    "#974ec3",
+    "#606060",
+    "#313866",
+  ],
 };
 
-const damagedColors = {
-  red: ["#2a2203", "#f9c4b4", "#1d7ba7", "#c22828"],
-};
+const dmgDemonCol = { red: ["#000000", "#f6f4f1"] };
+
+const damagedDemon = colorizeImages(dmgDemonCol, littleDemonPx);
 
 function rotate90Clockwise(a: number[][]) {
   const N = a.length;
@@ -37,23 +50,23 @@ const rollImage = (img: number[][], t = 1) => {
   return newImg;
 };
 
-const colorizedPlayer = colorizeImages(damagedColors, player);
+const damagedShaman = colorizeImages(damagedColors, shaman);
 
 // "#2a2203", "#f9c4b4", "#000000", "#0f0c00", "#1d7ba7", "#c22828", "#4a4a4a"
-const pxImages: [string, ImagePxsRawMap][] = [
+const pxImages: [string, number, ImagePxsRawMap][] = [
+  ["demon", 2, { ...littleDemonPx, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
   [
-    "player",
+    "shaman",
+    1.5,
     {
-      ...player,
-      roll_1: rollImage(player["duck"], 1),
-      roll_2: rollImage(player["duck"], 2),
-      roll_3: rollImage(player["duck"], 3),
-      dmg_1: colorizedPlayer["stand_1"],
-      colors: colorizedPlayer["colors"] as string[],
+      ...shaman,
+      dmg_1: damagedShaman["idle_1"],
+      roll_2: rollImage(shaman["roll_1"], 1),
+      roll_3: rollImage(shaman["roll_1"], 2),
+      roll_4: rollImage(shaman["roll_1"], 3),
+      colors: damagedShaman["colors"] as string[],
     },
   ],
-  ["enemy", colorizeImages(basicEnemyColors, player)],
-  ["demon", littleDemonPx],
 ];
 
 const groundBlock: RenderFn = (ctx, pos) => {
@@ -62,27 +75,17 @@ const groundBlock: RenderFn = (ctx, pos) => {
   y = Math.round(y);
   const w = 32;
   const h = 32;
-
+  ctx.fillStyle = "#DFA878";
   ctx.beginPath();
-  ctx.rect(x - w, y - h, w, h);
-  ctx.closePath();
-  ctx.fillStyle = "#000";
-  ctx.fill();
-  ctx.closePath();
-};
+  ctx.rect(x - w, y - h, w, 10);
+  ctx.rect(x - w, y - 10, w, 10);
 
-const bolt: RenderFn = (ctx, pos) => {
-  let [x, y] = pos;
-  x = Math.round(x);
-  y = Math.round(y);
-  const w = 6;
+  ctx.rect(x - w, y - h, 10, h);
+  ctx.rect(x, y - h, 10, h);
+  ctx.closePath();
 
-  ctx.beginPath();
-  ctx.arc(x - w, y - w, w, 0, 2 * Math.PI);
-  ctx.closePath();
-  ctx.fillStyle = "red";
   ctx.fill();
-  ctx.closePath();
+  ctx.stroke();
 };
 
 // const background: RenderFn = (ctx, pos) => {
@@ -97,7 +100,6 @@ type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };
 
 const staticImages: ImgFnMap = {
   groundBlock: { d: [32, 32], f: groundBlock },
-  bolt: { d: [12, 12], f: bolt },
 };
 
 class LoadingBar extends ComponentBaseEntity {
@@ -122,10 +124,9 @@ class LoadingBar extends ComponentBaseEntity {
       this.loadedImages["static"][img] = pre;
     }
   }
-  loadPxImages(pxImages: [string, ImagePxsRawMap][]) {
-    const z = 2;
+  loadPxImages(pxImages: [string, number, ImagePxsRawMap][]) {
     for (const r of pxImages) {
-      const [name, pxImage] = r;
+      const [name, z, pxImage] = r;
 
       for (const img of Object.keys(pxImage)) {
         if (img === "colors") continue;

@@ -13,8 +13,9 @@ import { isInView } from "../lib/utils";
 import { Enemy, EnemyData, LittleDemon, Player, demonSprite, enemySprite, playerSprite } from "../entities/player";
 // import { LifeBar } from "../entities/life";
 
-class Ground extends ComponentBaseEntity {
+export class Ground extends ComponentBaseEntity {
   name: string;
+  eType: string = "Ground";
   constructor(gs: GameState, pos: IVec, name: string) {
     const { stage } = gs;
     super(stage, []);
@@ -100,6 +101,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
 
   const sections = [
     "30.",
+    "1a",
     "3_",
     "15.,1b",
     "10.",
@@ -209,7 +211,6 @@ export const mainScene = () => {
         generateMap(gs, scene);
 
         gl.onUpdate(delta => {
-          // console.log(gs.session.pos)
           gs.getEntities()
             .filter(e => typeof e.update === "function")
             .forEach(e => e.update(delta, gs));

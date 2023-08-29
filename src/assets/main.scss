@@ -1,3 +1,19 @@
+$color_1: #141729;
+$color_2: #313866;
+$color_3: #fe7be5;
+$color_4: #006f46;
+$color_5: #606060;
+
+$white: #fff;
+$black: #000;
+
+body {
+  background-color: $color_1;
+  padding: 0;
+  margin: 0;
+}
+
+// Helper classes
 .h {
   display: none !important;
 }
@@ -9,11 +25,13 @@
   position: relative;
   width: 1200px;
   height: 800px;
+  margin: 0 auto;
 }
 canvas {
-  border: 1px solid tomato;
-  background-color: #ccc;
-
+  // border: 1px solid $black;
+  // border-radius: 3px;
+  // background-image: linear-gradient(#60b6ed, #164d8c, #041e42);
+  margin: auto;
   &.paused {
     opacity: 0.2;
   }
@@ -56,6 +74,60 @@ canvas {
   font-weight: bold;
 }
 
-#main-menu {
+body {
+  font-family: Tahoma, sans-serif;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 100px;
+  color: $black;
+}
+
+.main-menu {
+  border: 2px solid $color_4;
+  border-radius: 10px;
+  padding: 50px 100px;
   position: absolute;
+  background-color: $color_5;
+  color: $white;
+
+  ul {
+    display: flex; /* establish flex container */
+    flex-direction: column; /* make main axis vertical */
+    justify-content: center; /* center items vertically, in this case */
+    align-items: center; /* center items horizontally, in this case */
+
+    li {
+      text-align: center; /* will center text in <p>, which is not a flex item */
+    }
+  }
+}
+
+.dialogue {
+  background-color: white;
+  padding: 20px 50px;
+  border-radius: 10px;
+  border: 2px solid $color_4;
+  background-color: $color_5;
+  color: $white;
+  button {
+    float: right;
+  }
+}
+
+button {
+  margin: 5px;
+  width: 200px;
+  padding: 10px 0;
+  background-color: $color_4;
+  // color: $white;
+  border-radius: 10px;
+  font-weight: bold;
 }

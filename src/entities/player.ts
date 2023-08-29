@@ -15,33 +15,37 @@ import { Rechargeable } from "../services/rechargeable";
 import { MagicBolt } from "./bolt";
 
 export const playerSprite: (images: any) => Sprite = images => {
-  const p = images["player"];
+  const s = images["shaman"];
   return {
-    idle: { frames: [p.stand_1, p.stand_2], changeTime: 500 },
-    idleLeft: { frames: [p.stand_1_left, p.stand_2_left], changeTime: 500 },
-    run: { frames: [p.run_1, p.stand_1], changeTime: 150 },
-    runLeft: { frames: [p.run_1_left, p.stand_1_left], changeTime: 150 },
-    duck: { frames: [p.duck, p.roll_1, p.roll_2, p.roll_3], changeTime: 50 },
-    duckLeft: { frames: [p.duck_left, p.roll_1_left, p.roll_2_left, p.roll_3_left], changeTime: 50 },
-    dmg: { frames: [p.dmg_1, p.stand_1], changeTime: 50 },
-    dmgLeft: { frames: [p.dmg_1_left, p.stand_1_left], changeTime: 50 },
+    idle: { frames: [s.idle_1, s.idle_1, s.idle_2, s.idle_2, s.idle_1], changeTime: 250 },
+    idleLeft: { frames: [s.idle_1_left, s.idle_2_left], changeTime: 500 },
+    run: { frames: [s.run_1, s.idle_1], changeTime: 150 },
+    runLeft: { frames: [s.run_1_left, s.idle_1_left], changeTime: 150 },
+    duck: { frames: [s.roll_1, s.roll_2, s.roll_3, s.roll_4], changeTime: 50 },
+    duckLeft: { frames: [s.roll_1_left, s.roll_2_left, s.roll_3_left, s.roll_4_left], changeTime: 50 },
+    dmg: { frames: [s.dmg_1, s.idle_1], changeTime: 50 },
+    dmgLeft: { frames: [s.dmg_1_left, s.idle_1], changeTime: 50 },
+    fire: { frames: [s.fire], changeTime: 200 },
+    fireLeft: { frames: [s.fire_left], changeTime: 200 },
   };
 };
 
 export const enemySprite: (images: any) => Sprite = images => {
-  const { stand_1, stand_2, stand_1_left, stand_2_left, run_1, run_1_left, duck } = images["enemy"];
+  const s = images["shaman"];
   return {
-    idle: { frames: [stand_1, stand_2], changeTime: 500 },
-    idleLeft: { frames: [stand_1_left, stand_2_left], changeTime: 500 },
-    run: { frames: [run_1, stand_1], changeTime: 150 },
-    runLeft: { frames: [run_1_left, stand_1_left], changeTime: 150 },
+    idle: { frames: [s.enemy_idle_1, s.enemy_idle_2], changeTime: 500 },
+    idleLeft: { frames: [s.enemy_idle_1_left, s.enemy_idle_2_left], changeTime: 500 },
+    dmg: { frames: [s.dmg_1, s.enemy_idle_1], changeTime: 50 },
+    dmgLeft: { frames: [s.dmg_1_left, s.enemy_idle_1_left], changeTime: 50 },
   };
 };
 
 export const demonSprite: (images: any) => Sprite = images => {
   const d = images["demon"];
   return {
-    idle: { frames: [d.idle, d.idle_1], changeTime: 300 },
+    idle: { frames: [d.dem_1, d.dem_2, d.dem_3], changeTime: 300 },
+    dmg: { frames: [d.dmg_1, d.dem_1], changeTime: 50 },
+    dmgLeft: { frames: [d.dmg_1_left, d.dem_1], changeTime: 50 },
   };
 };
 
@@ -83,18 +87,19 @@ class ChargeRender implements IComponent {
   }
 
   onRender(e: ComponentBaseEntity, t: number, c: IVec): void {
-    const pos = e.getComponent<PositionComponent>("position").p;
+    const { p, direction } = e.getComponent<PositionComponent>("position");
     const charge = (e as Player).fireCharge;
 
-    if (!pos) throw new Error("PositionComponent not found");
-    const [x, y] = pos;
+    if (!p) throw new Error("PositionComponent not found");
+    const [x, y] = p;
 
-    // console.log(charge.current, charge.max);
     const ratio = charge.current / charge.max;
     const ctx = this.stage.ctx;
     ctx.beginPath();
-    ctx.rect(x + c[0] + 4, y + c[1] + 50, 40 * ratio, 2);
-    ctx.fillStyle = "tomato";
+    // ctx.rect(x + c[0] + 4, y + c[1] + 50, 40 * ratio, 2);
+    if (direction === -1) ctx.rect(x + c[0] - 3, y + c[1] + 40, 3, -30 * ratio);
+    else ctx.rect(x + c[0] + 48, y + c[1] + 40, 3, -30 * ratio);
+    ctx.fillStyle = "#187194";
     ctx.fill();
     ctx.closePath();
   }
@@ -115,12 +120,12 @@ export class Player extends ComponentBaseEntity {
   firing: boolean = false;
   life: number = 100;
   chargeUsage: number = 200;
-
+  eType: string = "Player";
   onEnd: () => void;
   constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void, zoom: number = 1) {
     const { stage } = gs;
     super(stage, []);
-    const position = new PositionComponent(pos, [0, 0], [400, 400]);
+    const position = new PositionComponent(pos, [0, 0], [400, 400], -1);
     const renderer = new SpriteRenderComponent(sprite, "idle");
 
     const downListeners = {
@@ -134,7 +139,7 @@ export class Player extends ComponentBaseEntity {
         this.jump();
       },
       ArrowDown: () => {
-        if (this.onTheGround && this.rollCharge.isFull) {
+        if (this.rollCharge.isFull) {
           this.rolling = 300;
           this.duck();
           this.rollCharge.useAll();
@@ -297,6 +302,7 @@ export class Player extends ComponentBaseEntity {
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
     const d = pos.direction;
+
     if (d === -1 && rend.currentAnimation !== "duck") rend.setupAnimation("duck");
     else if (d === 1 && rend.currentAnimation !== "duckLeft") rend.setupAnimation("duckLeft");
     pos.v = [0, pos.v[1]];
@@ -311,9 +317,15 @@ export class Player extends ComponentBaseEntity {
   magicBolt() {
     if (this.fireCharge.current < 75 || this.rolling) return;
     const pos = this.getComponent<PositionComponent>("position");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
     const d = pos.direction * -400;
+    const dd = pos.direction;
+
+    if (dd === -1 && rend.currentAnimation !== "fire") rend.setupAnimation("fire");
+    else if (dd === 1 && rend.currentAnimation !== "fireLeft") rend.setupAnimation("fireLeft");
+
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(this.chargeUsage);
   }
@@ -345,6 +357,8 @@ export class Enemy extends ComponentBaseEntity {
   fireCharge: Rechargeable = new Rechargeable(1000, 1000);
   firing: boolean = false;
   data: EnemyData = {};
+  eType: string = "Enemy";
+  energy: number = 50;
   constructor(gs: GameState, sprite: Sprite, pos: IVec, data: EnemyData = {}) {
     const { stage } = gs;
     super(stage, []);
@@ -374,7 +388,7 @@ export class Enemy extends ComponentBaseEntity {
   }
 
   action(delta: number, gs: GameState) {
-    const player = gs.scene.getEntities().find(e => e.constructor.name === "Player") as Player;
+    const player = gs.scene.getEntities().find(e => e.eType === "Player") as Player;
     if (!player) return;
     const [px, py] = player.getComponent<PositionComponent>("position").p;
     const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
@@ -418,9 +432,18 @@ export class Enemy extends ComponentBaseEntity {
     const pos = this.getComponent<PositionComponent>("position");
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(boltCost);
+  }
+  takeDamage(dmg: number) {
+    const rend = this.getComponent<SpriteRenderComponent>("render");
+    if (rend.currentAnimation !== "dmg") {
+      rend.setupAnimation("dmg");
+      setTimeout(() => rend.setupAnimation("idle"), 100);
+    }
+    this.energy -= dmg;
+    if (this.energy <= 0) this.gs.scene.removeEntity(this);
   }
 }
 
@@ -431,6 +454,7 @@ export class LittleDemon extends ComponentBaseEntity {
   energy: number = 50;
   speed: number = 100;
   maxDist: number = 500;
+  eType: string = "LittleDemon";
   constructor(gs: GameState, sprite: Sprite, pos: IVec, data: any = {}) {
     const { stage } = gs;
     super(stage, []);
@@ -440,7 +464,7 @@ export class LittleDemon extends ComponentBaseEntity {
 
     const renderer = new SpriteRenderComponent(sprite, "idle");
     const box = new BoxColliderComponent([30, 30], (b: ComponentBaseEntity, d: any) => {
-      if (b.constructor.name === "Player" && !this.triggered) {
+      if (b.eType === "Player" && !this.triggered) {
         this.triggered = true;
         gs.scene.removeEntity(this);
 
@@ -474,7 +498,7 @@ export class LittleDemon extends ComponentBaseEntity {
   }
 
   action(delta: number, gs: GameState) {
-    const player = gs.scene.getEntities().find(e => e.constructor.name === "Player") as Player;
+    const player = gs.scene.getEntities().find(e => e.eType === "Player") as Player;
     if (!player) return;
     const [px, py] = player.getComponent<PositionComponent>("position").p;
     const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
@@ -521,7 +545,12 @@ export class LittleDemon extends ComponentBaseEntity {
   }
   takeDamage(dmg: number) {
     const v = this.getComponent<PositionComponent>("position").v;
-    this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -200]);
+    this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -50]);
+    const rend = this.getComponent<SpriteRenderComponent>("render");
+    if (rend.currentAnimation !== "dmg") {
+      rend.setupAnimation("dmg");
+      setTimeout(() => rend.setupAnimation("idle"), 100);
+    }
     this.energy -= dmg;
     if (this.energy <= 0) this.gs.scene.removeEntity(this);
   }

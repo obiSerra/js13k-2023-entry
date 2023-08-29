@@ -6,7 +6,7 @@ export class ComponentBaseEntity implements ComponentBaseEntity {
   stage: IStage;
   components: { [key: string]: IComponent[] };
   hasRender: boolean;
-
+  eType: string = "";
   lastMv: IVec;
   isColliding: boolean;
 

@@ -176,26 +176,29 @@ class Background extends ComponentBaseEntity {
 
   update(delta: number, gs?: GameState): void {
     const [x, y] = gs?.session?.pos || [0, 0];
-    const bgs = [
-      [800, ["#1520A6", "#0A1172"]],
-      [400, ["#3944BC", "#1520A6"]],
-      [0, ["#0492C2", "#3944BC"]],
-      [-10000, ["#63C5DA", "#0492C2"]],
-    ];
 
-    bgs.sort((a, b) => (b[0] as number) - (a[0] as number));
+    // const bgs = [
+    //   [800, ["#1520A6", "#0A1172"]],
+    //   [400, ["#3944BC", "#1520A6"]],
+    //   [0, ["#0492C2", "#3944BC"]],
+    //   [-10000, ["#63C5DA", "#0492C2"]],
+    // ];
 
-    let c1 = [];
-    for (let k of bgs) {
-      const v = k[0] as number;
+    // bgs.sort((a, b) => (b[0] as number) - (a[0] as number));
 
-      if (v < y) {
-        c1 = k[1] as string[];
-        break;
-      }
-    }
+    let c1 = ["#141729"];
+    // for (let k of bgs) {
+    //   const v = k[0] as number;
 
-    const color = `linear-gradient(${c1.join(",")})`;
+    //   if (v < y) {
+    //     c1 = k[1] as string[];
+    //     break;
+    //   }
+    // }
+
+    // const color = `linear-gradient(${c1.join(",")})`;
+    // const color = `liner-gradient(#974ec3, #141729 10%, #313866)`;
+    const color = `linear-gradient(0deg, #141729, #313866 30%, #505ba5)`;
     gs.stage.canvas.style.backgroundImage = color;
     // console.log(gs.session);
   }

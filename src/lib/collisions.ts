@@ -34,7 +34,7 @@ export const resolveCollisions = (entities: ComponentBaseEntity[]) => {
     for (let j = 0; j < entities.length; j++) {
       const b = entities[j];
       if (b.ID !== a.ID) {
-        const t = b.constructor.name;
+        const t = b.eType;
 
         const {
           box: bBox,

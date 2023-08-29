@@ -4,8 +4,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
-const HTMLInlineCSSWebpackPlugin =
-  require("html-inline-css-webpack-plugin").default;
+const HTMLInlineCSSWebpackPlugin = require("html-inline-css-webpack-plugin").default;
 
 module.exports = {
   entry: "./src/index.ts",
@@ -17,9 +16,21 @@ module.exports = {
         use: "ts-loader",
         exclude: /node_modules/,
       },
+      // {
+      //   test: /.s?css$/,
+      //   use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+      // },
       {
-        test: /.s?css$/,
-        use: [MiniCssExtractPlugin.loader, "css-loader", "sass-loader"],
+        test: /\.s[ac]ss$/i,
+        use: [
+          MiniCssExtractPlugin.loader,
+          // Creates `style` nodes from JS strings
+          // "style-loader",
+          // Translates CSS into CommonJS
+          "css-loader",
+          // Compiles Sass to CSS
+          "sass-loader",
+        ],
       },
     ],
   },
