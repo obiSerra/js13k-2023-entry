@@ -36,7 +36,7 @@ class Ground extends ComponentBaseEntity {
     ctx.beginPath();
     ctx.font = "20px serif";
     ctx.fillStyle = "white";
-    ctx.fillText(this.name, x + c[0], y + c[1] + 20);
+    // ctx.fillText(this.name, x + c[0], y + c[1] + 20);
     ctx.closePath();
   }
 }
@@ -125,7 +125,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
   let v = Math.floor(gs.stage.canvas.height / 2);
   let enemies = 0;
   const tiles = [];
-  console.log("Map length", map.length);
+  // console.log("Map length", map.length);
   for (let i = 0; i < map.length; i++) {
     const tile = map.tile(i);
 
@@ -197,7 +197,6 @@ export const mainScene = () => {
     async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene }> =>
       new Promise((resolve, reject) => {
         const { gl } = gs;
-        const v: IVec = [Math.floor(gs.stage.canvas.height / 2), Math.floor(gs.stage.canvas.width / 2)];
         const player = new Player(gs, playerSprite(gs.images), [400, -10], gs.session.lives, () => {
           resolve({ gs, scene });
         });

@@ -6,9 +6,10 @@ import {
   PositionComponent,
   SpriteRenderComponent,
 } from "../lib/components";
-import { IEntity, IVec, Sprite } from "../lib/contracts";
+import { ComponentType, IComponent, IEntity, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
+import { Stage } from "../lib/stage";
 import { Throttle, getProgress } from "../lib/utils";
 import { Rechargeable } from "../services/rechargeable";
 import { MagicBolt } from "./bolt";
@@ -69,9 +70,36 @@ class Progression extends HTMLComponent {
     const [x, y] = gs.session.pos;
     const progress = getProgress(x);
     this.el.innerHTML = `${progress}`;
-    console.log(gs.session);
+    // console.log(gs.session);
   }
 }
+
+class ChargeRender implements IComponent {
+  type: ComponentType = "render";
+  stage: Stage;
+
+  constructor(stage: Stage) {
+    this.stage = stage;
+  }
+
+  onRender(e: ComponentBaseEntity, t: number, c: IVec): void {
+    const pos = e.getComponent<PositionComponent>("position").p;
+    const charge = (e as Player).fireCharge;
+
+    if (!pos) throw new Error("PositionComponent not found");
+    const [x, y] = pos;
+
+    // console.log(charge.current, charge.max);
+    const ratio = charge.current / charge.max;
+    const ctx = this.stage.ctx;
+    ctx.beginPath();
+    ctx.rect(x + c[0] + 4, y + c[1] + 50, 40 * ratio, 2);
+    ctx.fillStyle = "tomato";
+    ctx.fill();
+    ctx.closePath();
+  }
+}
+
 const fireThrottle = new Throttle(150);
 export class Player extends ComponentBaseEntity {
   gs: GameState;
@@ -86,8 +114,10 @@ export class Player extends ComponentBaseEntity {
   rolling: number = 0;
   firing: boolean = false;
   life: number = 100;
+  chargeUsage: number = 200;
+
   onEnd: () => void;
-  constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void) {
+  constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void, zoom: number = 1) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, [0, 0], [400, 400]);
@@ -133,6 +163,10 @@ export class Player extends ComponentBaseEntity {
       },
     };
 
+    if (lives === 2) {
+      this.chargeUsage = 75;
+    }
+
     const control = new KeyboardControlComponent(downListeners, upListeners);
     const lifeBar = new LifeBarComponent("#life");
     const progression = new Progression("#progression");
@@ -150,6 +184,7 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(gravity);
     this.addComponent(lifeBar);
     this.addComponent(progression);
+    this.addComponent(new ChargeRender(stage));
   }
 
   get invulnerable() {
@@ -280,7 +315,7 @@ export class Player extends ComponentBaseEntity {
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 12], [d, 0], this.ID);
     this.gs.scene.addEntity(bolt);
-    this.fireCharge.use(75);
+    this.fireCharge.use(this.chargeUsage);
   }
 
   destroy(): void {
@@ -295,6 +330,10 @@ export class Player extends ComponentBaseEntity {
     if (rend.currentAnimation !== "dmg") rend.setupAnimation("dmg");
     this.life -= damage;
     if (this.life <= 0) this.destroy();
+  }
+
+  render(t: number, ca?: IVec): void {
+    super.render(t, ca);
   }
 }
 const enemyFireThrottle = new Throttle(100);
@@ -460,7 +499,6 @@ export class LittleDemon extends ComponentBaseEntity {
     else if (px > x && d !== -1) pos.direction = -1;
 
     if (dist < this.maxDist) {
-      console.log(this.speed * pos.direction, 0);
       pos.accelerate([this.speed * -pos.direction, 0]);
     }
     // console.log(dist, vDist);
