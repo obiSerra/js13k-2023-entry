@@ -101,7 +101,6 @@ const generateMap = (gs: GameState, scene: Scene) => {
 
   const sections = [
     "30.",
-    "1a",
     "3_",
     "15.,1b",
     "10.",
@@ -192,15 +191,16 @@ const generateMap = (gs: GameState, scene: Scene) => {
     // }
     // lastBlock = 0;
   }
+  return map;
 };
 
 export const mainScene = () => {
   return new Scene(
-    async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene }> =>
+    async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene, win: boolean }> =>
       new Promise((resolve, reject) => {
         const { gl } = gs;
         const player = new Player(gs, playerSprite(gs.images), [400, -10], gs.session.lives, () => {
-          resolve({ gs, scene });
+          resolve({ gs, scene, win: false });
         });
 
         scene.addEntity(player);
@@ -208,7 +208,7 @@ export const mainScene = () => {
 
         // scene.addEntity(new LifeBar(gs.stage));
 
-        generateMap(gs, scene);
+        const map = generateMap(gs, scene);
 
         gl.onUpdate(delta => {
           gs.getEntities()
@@ -221,6 +221,10 @@ export const mainScene = () => {
           const cx = gs.stage.canvas.width / 2 - x;
           const cy = gs.stage.canvas.height / 2 - y;
 
+          const threshold = 4;
+          if (Math.round(x / 32) >= map.length - threshold) {
+            resolve({ gs, scene, win: true });
+          }
           const inView = scene.getEntities().filter(e => isInView(e, [cx, cy], gs.stage.canvas));
 
           inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta, gs));

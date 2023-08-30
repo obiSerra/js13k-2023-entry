@@ -92,6 +92,16 @@ You failed to save the Great Khan.
 <button id="skip">Play Again</button>
 </div>`;
 
+
+const winGame = (gs) =>`<div>
+<p>
+You completed the journey and saved the Great Khan.
+</p>
+<p>
+
+<button id="skip">Play Again</button>
+</div>`;
+
 class TutorialEntity extends ComponentBaseEntity {
   gs: GameState;
   onSkip: () => void;
@@ -245,13 +255,14 @@ You moved ${getProgress(gs.session.pos[0])} steps.
     gs.addEntity(tutorial);
   });
 
-const displayEndGame = async (gs: GameState) =>
+const displayEndGame = async (gs: GameState, win: boolean = false) =>
   new Promise(resolve => {
     const tutorial = new EndgameEntity(gs, () => {
       resolve(null);
       gs.removeEntity(tutorial);
     });
-    tutorial.setContent(endGame);
+    const content = win ? winGame(gs) : endGame;
+    tutorial.setContent(content);
     gs.addEntity(tutorial);
   });
 
@@ -273,6 +284,7 @@ const displayEndGame = async (gs: GameState) =>
   const pause = new PauseEntity(gameState);
   gameState.addEntity(pause);
   let showTutorial = clicked === "new-game";
+  let win = false;
 
   while (gameState.session.lives > 0) {
     console.log("Running main scene");
@@ -284,9 +296,15 @@ const displayEndGame = async (gs: GameState) =>
       }
     }, 300);
 
-    await gameState.runScene();
+    const result: any = await gameState.runScene();
+    if (result?.win) {
+      win = true;
+      break;
+    }
     displayMsg(gameState);
     gameState.session.lives--;
   }
-  displayEndGame(gameState);
+
+  displayEndGame(gameState, win);
+  
 })();
