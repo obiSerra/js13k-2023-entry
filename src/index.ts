@@ -50,7 +50,6 @@ class PauseEntity extends ComponentBaseEntity {
 }
 
 const storyContent = (gs: GameState) => {
-  console.log(gs.images["shaman"]);
   return `<div>
 <div class="tip_container">
 <div class="col_1">
