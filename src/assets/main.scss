@@ -117,6 +117,29 @@ h1 {
   border: 2px solid $color_4;
   background-color: $color_5;
   color: $white;
+  min-width: 600px;
+
+  > div {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tip_container {
+    display: flex;
+    &:last-child {
+      justify-content: flex-end;
+    }
+  }
+  .col_1 {
+    width: 70%;
+    color: $black;
+  }
+  .col_2 {
+    width: 30%;
+    text-align: center;
+    color: $color_1;
+  }
+
   button {
     float: right;
   }
@@ -130,4 +153,12 @@ button {
   // color: $white;
   border-radius: 10px;
   font-weight: bold;
+}
+
+table {
+  margin: auto;
+}
+td {
+  padding: 5px;
+  text-align: center;
 }

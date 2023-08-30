@@ -114,7 +114,7 @@ export class Player extends ComponentBaseEntity {
   jumpSpeed: number = -300;
   onTheGround: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(1000, 500);
-  jumpCharge: Rechargeable = new Rechargeable(200, 200);
+  jumpCharge: Rechargeable = new Rechargeable(10, 10);
   rollCharge: Rechargeable = new Rechargeable(150, 150);
   rolling: number = 0;
   firing: boolean = false;
@@ -145,7 +145,7 @@ export class Player extends ComponentBaseEntity {
           this.rollCharge.useAll();
         }
       },
-      " ": () => {
+      Shift: () => {
         this.firing = true;
       },
     };
@@ -163,7 +163,7 @@ export class Player extends ComponentBaseEntity {
       ArrowUp: () => {
         // this.status = "idle";
       },
-      " ": () => {
+      Shift: () => {
         this.firing = false;
       },
     };

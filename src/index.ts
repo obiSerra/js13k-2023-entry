@@ -49,7 +49,11 @@ class PauseEntity extends ComponentBaseEntity {
   }
 }
 
-const storyContent = `<div>
+const storyContent = (gs: GameState) => {
+  console.log(gs.images["shaman"]);
+  return `<div>
+<div class="tip_container">
+<div class="col_1">
 <p>
 In the 13th Century, Genghis Khan created the largest contiguous empire in history.
 </p>
@@ -58,18 +62,27 @@ Year 1215 CE,<br>
 the Great Khan lies mortally would by an enemy arrow. <br> Only you, his shaman, can save him, rescuing his soul from the land of the spirits.
 </p>
 <p>
-<strong>Controls</strong>
-<ul>
-<li>Jump: ↑</li>
-<li>move: ← →</li>
-<li>roll: ↓</li>
-<li>fire: Space</li>
-</ul>
+</div>
+<div class="col_2">
 
 
+
+
+<table>
+<tr><td>Magic Energy</td><td><img style="border-left:4px solid #187194; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
+<tr><td>Jump</td><td>↑</td></tr>
+<tr><td>Move</td><td>← →</td></tr>
+<tr><td>Roll</td><td>↓</td></tr>
+<tr><td>Magic Bolt</td><td>Shift</td></tr>
+</table>
 </p>
-<button id="skip">skip</button>
+</div>
+</div>
+<div class="tip_container">
+<button id="skip">Continue</button>
+</div>
 </div>`;
+};
 
 const endGame = `<div>
 <p>
@@ -210,7 +223,7 @@ const displayTutorial = async (gs: GameState) =>
       resolve(null);
       // gs.removeEntity(tutorial);
     });
-    tutorial.setContent(storyContent);
+    tutorial.setContent(storyContent(gs));
     gs.addEntity(tutorial);
   });
 
@@ -251,6 +264,8 @@ const displayEndGame = async (gs: GameState) =>
 
   gameState.scene = loadingScene();
   await gameState.runScene();
+
+  // await displayTutorial(gameState);
 
   gameState.scene = menuScene();
   const clicked: string = await gameState.runScene();
