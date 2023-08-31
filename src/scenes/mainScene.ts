@@ -171,32 +171,14 @@ const generateMap = (gs: GameState, scene: Scene) => {
       scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
       cnt++;
     }
-    // const tile = tilePercentage(tiles, i);
 
-    // if (tile === "raise") v -= 64;
-    // if (tile !== "hole")
-
-    // tiles.push(tile);
-    // if (tiles.length > 20) tiles.shift();
-    // Terrain Increase
-    // if (i % 50 == 0 && i > 99) v -= 64;
-
-    // if (i > 50 && i % 17 === 0) {
-    //   const data: EnemyData = {};
-    //   if (enemies < 2) data.boltCost = 800;
-    //   else if (enemies < 5) data.boltCost = 550;
-    //   else data.boltCost = 400;
-    //   scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64], data));
-    //   enemies++;
-    // }
-    // lastBlock = 0;
   }
   return map;
 };
 
 export const mainScene = () => {
   return new Scene(
-    async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene, win: boolean }> =>
+    async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene; win: boolean }> =>
       new Promise((resolve, reject) => {
         const { gl } = gs;
         const player = new Player(gs, playerSprite(gs.images), [400, -10], gs.session.lives, () => {

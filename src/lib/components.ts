@@ -353,29 +353,6 @@ export class HTMLComponent implements IComponent {
   }
 }
 
-export class KeyboardControlComponent2 implements IComponent {
-  type: ComponentType;
-  downButtons: Set<string>;
-  clickedDown: Set<string>;
-  clickedUp: Set<string>;
-  constructor() {
-    this.type = "control";
-
-    this.downButtons = new Set();
-    this.clickedDown = new Set();
-    this.clickedUp = new Set();
-  }
-  onInit(e: ComponentBaseEntity): void {
-    document.addEventListener("keydown", e => {
-      this.clickedDown.add(e.key);
-    });
-    document.addEventListener("keyup", e => {
-      this.clickedUp.add(e.key);
-      this.downButtons = new Set(Array.from(this.downButtons).filter(k => k !== e.key));
-    });
-  }
-}
-
 type EvtListeners = { [k: string]: (e: KeyboardEvent) => void };
 
 export class KeyboardControlComponent implements IComponent {

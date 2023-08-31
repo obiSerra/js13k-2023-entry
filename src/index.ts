@@ -54,18 +54,18 @@ const storyContent = (gs: GameState) => {
 <div class="tip_container">
 <div class="col_1">
 <p>
-In the 13th Century, Genghis Khan created the largest contiguous empire in history.
+In the 13th Century, <span class='hl-2'>Genghis Khan</span> created the largest contiguous empire in history.
 </p>
 <p>
-Year 1215 CE,<br>
-the Great Khan lies mortally would by an enemy arrow. <br> Only you, his shaman, can save him, rescuing his soul from the land of the spirits.
+Year <span class='hl-1'>1215 CE</span>,
+the Great Khan lies in front of you, mortally would by an enemy arrow. 
+</p>
+<p>
+Only you, his shaman, can save him, rescuing his soul from the land of the spirits.
 </p>
 <p>
 </div>
 <div class="col_2">
-
-
-
 
 <table>
 <tr><td>Magic Energy</td><td><img style="border-left:4px solid #187194; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
@@ -83,7 +83,7 @@ the Great Khan lies mortally would by an enemy arrow. <br> Only you, his shaman,
 </div>`;
 };
 
-const endGame = `<div>
+const endGame = gs => `<div>
 <p>
 You failed to save the Great Khan.
 </p>
@@ -92,8 +92,7 @@ You failed to save the Great Khan.
 <button id="skip">Play Again</button>
 </div>`;
 
-
-const winGame = (gs) =>`<div>
+const winGame = gs => `<div>
 <p>
 You completed the journey and saved the Great Khan.
 </p>
@@ -101,6 +100,29 @@ You completed the journey and saved the Great Khan.
 
 <button id="skip">Play Again</button>
 </div>`;
+
+const lostLife = (gs: GameState) => {
+  const lives = gs.session.lives;
+  let msg = "";
+
+  if (lives > 1)
+    msg = `The spirits will grant you another chance, gifting you with <span class="hl-1"> increased Magic Power<span>.`;
+  else if (lives === 1) msg = `The spirits may grant you one last chance.`;
+
+  return `<div>
+  <div class="tip_container fd">
+  <p>
+  Your journey ended after <span class="hl-1">${getProgress(gs?.session?.pos[0])} steps</span>.
+  </p>
+  <p>
+  ${msg}
+  </p>
+  </div>
+  <div class="tip_container">
+  <button id="skip">continue</button>
+  </div>
+  </div>`;
+};
 
 class TutorialEntity extends ComponentBaseEntity {
   gs: GameState;
@@ -226,85 +248,57 @@ class Background extends ComponentBaseEntity {
   }
 }
 
-const displayTutorial = async (gs: GameState) =>
+const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string) =>
   new Promise(resolve => {
     const tutorial = new TutorialEntity(gs, () => {
       resolve(null);
       // gs.removeEntity(tutorial);
     });
-    tutorial.setContent(storyContent(gs));
-    gs.addEntity(tutorial);
-  });
 
-const displayMsg = async (gs: GameState) =>
-  new Promise(resolve => {
-    const tutorial = new TutorialEntity(gs, () => {
-      resolve(null);
-      // gs.removeEntity(tutorial);
-    });
-    const lostLife = `<div>
-<p>
-You moved ${getProgress(gs.session.pos[0])} steps.
-<br>The spirits may help you once more.
-</p>
-<p>
-
-<button id="skip">continue</button>
-</div>`;
-    tutorial.setContent(lostLife);
-    gs.addEntity(tutorial);
-  });
-
-const displayEndGame = async (gs: GameState, win: boolean = false) =>
-  new Promise(resolve => {
-    const tutorial = new EndgameEntity(gs, () => {
-      resolve(null);
-      gs.removeEntity(tutorial);
-    });
-    const content = win ? winGame(gs) : endGame;
-    tutorial.setContent(content);
+    tutorial.setContent(msgFnc(gs));
     gs.addEntity(tutorial);
   });
 
 (async () => {
-  const gameState = new GameState();
-  gameState.session.lives = 3;
+  const gs = new GameState();
+  gs.session.lives = 3;
 
-  gameState.addEntity(new Background(gameState));
+  gs.addEntity(new Background(gs));
 
-  gameState.scene = loadingScene();
-  await gameState.runScene();
+  gs.scene = loadingScene();
+  await gs.runScene();
 
-  // await displayTutorial(gameState);
+  // await displayMsg(gs, storyContent);
+  // gs.session.pos = [100, 0];
+  // gs.session.lives = 2;
+  // await displayMsg(gs, lostLife);
 
-  gameState.scene = menuScene();
-  const clicked: string = await gameState.runScene();
+  gs.scene = menuScene();
+  const clicked: string = await gs.runScene();
 
-  gameState.status = "running";
-  const pause = new PauseEntity(gameState);
-  gameState.addEntity(pause);
+  gs.status = "running";
+  const pause = new PauseEntity(gs);
+  gs.addEntity(pause);
   let showTutorial = clicked === "new-game";
   let win = false;
 
-  while (gameState.session.lives > 0) {
+  while (gs.session.lives > 0) {
     console.log("Running main scene");
-    gameState.scene = mainScene();
+    gs.scene = mainScene();
     setTimeout(async () => {
       if (showTutorial) {
-        await displayTutorial(gameState);
+        await displayMsg(gs, storyContent);
         showTutorial = false;
       }
     }, 300);
 
-    const result: any = await gameState.runScene();
+    const result: any = await gs.runScene();
     if (result?.win) {
       win = true;
       break;
     }
-    displayMsg(gameState);
-    gameState.session.lives--;
+    displayMsg(gs, lostLife);
+    gs.session.lives--;
   }
-
-  displayEndGame(gameState, win);
-  
+  displayMsg(gs, win ? winGame : endGame);
 })();

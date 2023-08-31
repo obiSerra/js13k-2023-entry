@@ -1,6 +1,6 @@
 $color_1: #141729;
 $color_2: #313866;
-$color_3: #fe7be5;
+$color_3: #e31937;
 $color_4: #006f46;
 $color_5: #606060;
 
@@ -111,13 +111,13 @@ h1 {
 }
 
 .dialogue {
-  background-color: white;
   padding: 20px 50px;
   border-radius: 10px;
   border: 2px solid $color_4;
   background-color: $color_5;
   color: $white;
   min-width: 600px;
+  color: $black;
 
   > div {
     display: flex;
@@ -127,21 +127,17 @@ h1 {
   .tip_container {
     display: flex;
     &:last-child {
-      justify-content: flex-end;
+      justify-content: center;
     }
   }
   .col_1 {
     width: 70%;
-    color: $black;
+
+    padding-right: 20px;
   }
   .col_2 {
     width: 30%;
     text-align: center;
-    color: $color_1;
-  }
-
-  button {
-    float: right;
   }
 }
 
@@ -157,8 +153,29 @@ button {
 
 table {
   margin: auto;
+  border-collapse: collapse;
+}
+tr {
+  border: 1px solid $white;
 }
 td {
+  border: 1px solid $color_4;
+  height: 45px;
   padding: 5px;
   text-align: center;
+}
+
+.hl-1 {
+  font-weight: bold;
+}
+.hl-2 {
+  font-weight: bold;
+}
+
+.fr {
+  flex-direction: row;
+}
+
+.fd {
+  flex-direction: column;
 }

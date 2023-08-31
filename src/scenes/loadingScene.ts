@@ -28,7 +28,11 @@ const damagedColors = {
 
 const dmgDemonCol = { red: ["#000000", "#f6f4f1"] };
 
+const boltColor = { red: ["#187194"], pink: ["#aad1e7"], purple: ["#3098c1"] };
+
 const damagedDemon = colorizeImages(dmgDemonCol, littleDemonPx);
+const enhancedBolt = colorizeImages(boltColor, shaman);
+const damagedShaman = colorizeImages(damagedColors, shaman);
 
 function rotate90Clockwise(a: number[][]) {
   const N = a.length;
@@ -50,8 +54,6 @@ const rollImage = (img: number[][], t = 1) => {
   return newImg;
 };
 
-const damagedShaman = colorizeImages(damagedColors, shaman);
-
 // "#2a2203", "#f9c4b4", "#000000", "#0f0c00", "#1d7ba7", "#c22828", "#4a4a4a"
 const pxImages: [string, number, ImagePxsRawMap][] = [
   ["demon", 2, { ...littleDemonPx, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
@@ -65,6 +67,18 @@ const pxImages: [string, number, ImagePxsRawMap][] = [
       roll_3: rollImage(shaman["roll_1"], 2),
       roll_4: rollImage(shaman["roll_1"], 3),
       colors: damagedShaman["colors"] as string[],
+    },
+  ],
+  [
+    "bolt",
+    2,
+    {
+      bolt_1: enhancedBolt["bolt_1"],
+      bolt_2: enhancedBolt["bolt_2"],
+      bolt_explode_1: enhancedBolt["bolt_explode_1"],
+      bolt_explode_2: enhancedBolt["bolt_explode_2"],
+      bolt_explode_3: enhancedBolt["bolt_explode_3"],
+      colors: enhancedBolt["colors"] as string[],
     },
   ],
 ];

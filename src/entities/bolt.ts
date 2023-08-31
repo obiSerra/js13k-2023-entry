@@ -8,12 +8,18 @@ import { Enemy, LittleDemon, Player } from "./player";
 export type MagicBoltData = {
   dmg?: number;
   exp?: number;
+  en?: boolean;
 };
 const boltSprite: (images: any) => Sprite = images => {
   const s = images["shaman"];
+  const b = images["bolt"];
   return {
     bolt: { frames: [s.bolt_1, s.bolt_2], changeTime: 50 },
+    boltExplode: { frames: [s.bolt_explode_1, s.bolt_explode_2, s.bolt_explode_3], changeTime: 50 },
     boltLeft: { frames: [s.bolt_1_left, s.bolt_2_left], changeTime: 50 },
+    enhBolt: { frames: [b.bolt_1, b.bolt_2], changeTime: 50 },
+    enhBoltExplode: { frames: [b.bolt_explode_1, b.bolt_explode_2, b.bolt_explode_3], changeTime: 50 },
+    enhBoltLeft: { frames: [b.bolt_1_left, b.bolt_2_left], changeTime: 50 },
   };
 };
 export class MagicBolt extends ComponentBaseEntity {
@@ -26,6 +32,8 @@ export class MagicBolt extends ComponentBaseEntity {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, v, [400, 600]);
+    position.direction = v[0] > 0 ? -1 : 1;
+    const d = position.direction;
     this.gs = gs;
     this.c = creatorID;
     this.data = { ...this.data, ...data };
@@ -50,7 +58,7 @@ export class MagicBolt extends ComponentBaseEntity {
           (b as Player)?.takeDamage(this.data.dmg || 10);
         }
       }
-      gs.scene.removeEntity(this);
+      this.onDestroy();
     });
     box.solid = false;
     box.posModifiers = [2, 2];
@@ -58,9 +66,17 @@ export class MagicBolt extends ComponentBaseEntity {
     this.addComponent(position);
     this.addComponent(renderer);
     this.addComponent(box);
+
+    if (this.data?.en) {
+      if (d === -1 && renderer.currentAnimation !== "enhBolt") renderer.setupAnimation("enhBolt");
+      else if (d === 1 && renderer.currentAnimation !== "enhBoltLeft") renderer.setupAnimation("enhBoltLeft");
+    } else {
+      if (d === -1 && renderer.currentAnimation !== "bolt") renderer.setupAnimation("bolt");
+      else if (d === 1 && renderer.currentAnimation !== "boltLeft") renderer.setupAnimation("boltLeft");
+    }
   }
   endTime() {
-    this.gs.scene.removeEntity(this);
+    this.onDestroy();
   }
 
   update(delta: number, gs: GameState): void {
@@ -70,13 +86,24 @@ export class MagicBolt extends ComponentBaseEntity {
   }
 
   render(t: number, ca?: IVec): void {
-    const pos = this.getComponent<PositionComponent>("position");
-    const rend = this.getComponent<SpriteRenderComponent>("render");
-    const d = pos.v[0] > 0 ? -1 : 1;
-
-    if (d === -1 && rend.currentAnimation !== "bolt") rend.setupAnimation("bolt");
-    else if (d === 1 && rend.currentAnimation !== "boltLeft") rend.setupAnimation("boltLeft");
     // if (rend.currentAnimation !== "bolt") rend.setupAnimation("bolt");
     super.render(t, ca);
+  }
+
+  onDestroy() {
+    const rend = this.getComponent<SpriteRenderComponent>("render");
+
+    if (this.data?.en) {
+      if (rend.currentAnimation !== "enhBoltExplode") rend.setupAnimation("enhBoltExplode");
+    } else {
+      if (rend.currentAnimation !== "boltExplode") rend.setupAnimation("boltExplode");
+    }
+
+    // if (rend.currentAnimation !== "boltExplode") rend.setupAnimation("boltExplode");
+    this.getComponent<PositionComponent>("position").v = [0, 0];
+    this.getComponent<BoxColliderComponent>("collider").onCollide = null;
+    setTimeout(() => {
+      this.gs.scene.removeEntity(this);
+    }, 150);
   }
 }

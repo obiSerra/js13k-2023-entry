@@ -4,11 +4,13 @@ import {
   HTMLComponent,
   KeyboardControlComponent,
   PositionComponent,
+  SoundComponent,
   SpriteRenderComponent,
 } from "../lib/components";
 import { ComponentType, IComponent, IEntity, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
+import { genMusicSheet } from "../lib/soundComponent";
 import { Stage } from "../lib/stage";
 import { Throttle, getProgress } from "../lib/utils";
 import { Rechargeable } from "../services/rechargeable";
@@ -81,9 +83,10 @@ class Progression extends HTMLComponent {
 class ChargeRender implements IComponent {
   type: ComponentType = "render";
   stage: Stage;
-
-  constructor(stage: Stage) {
+  en: boolean = false;
+  constructor(stage: Stage, en: boolean = false) {
     this.stage = stage;
+    this.en = en;
   }
 
   onRender(e: ComponentBaseEntity, t: number, c: IVec): void {
@@ -96,10 +99,21 @@ class ChargeRender implements IComponent {
     const ratio = charge.current / charge.max;
     const ctx = this.stage.ctx;
     ctx.beginPath();
-    // ctx.rect(x + c[0] + 4, y + c[1] + 50, 40 * ratio, 2);
-    if (direction === -1) ctx.rect(x + c[0] - 3, y + c[1] + 40, 3, -30 * ratio);
-    else ctx.rect(x + c[0] + 48, y + c[1] + 40, 3, -30 * ratio);
-    ctx.fillStyle = "#187194";
+    let h = -30 * ratio;
+    let w = 3;
+    let color = "#187194";
+
+    if (this.en) {
+      h = -40 * ratio;
+      w = 5;
+      color = "#e31937";
+    }
+
+    if (direction === -1)
+      // ctx.rect(x + c[0] + 4, y + c[1] + 50, 40 * ratio, 2);
+      ctx.rect(x + c[0] - 3, y + c[1] + 40, w, h);
+    else ctx.rect(x + c[0] + 48, y + c[1] + 40, w, h);
+    ctx.fillStyle = color;
     ctx.fill();
     ctx.closePath();
   }
@@ -121,8 +135,9 @@ export class Player extends ComponentBaseEntity {
   life: number = 100;
   chargeUsage: number = 200;
   eType: string = "Player";
+  lives: number = 3;
   onEnd: () => void;
-  constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void, zoom: number = 1) {
+  constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, [0, 0], [400, 400], -1);
@@ -167,14 +182,17 @@ export class Player extends ComponentBaseEntity {
         this.firing = false;
       },
     };
-
-    if (lives === 2) {
+    this.lives = lives;
+    if (lives <= 2) {
       this.chargeUsage = 75;
     }
 
     const control = new KeyboardControlComponent(downListeners, upListeners);
     const lifeBar = new LifeBarComponent("#life");
     const progression = new Progression("#progression");
+
+    const sound = new SoundComponent(["triangle", "sawtooth", "square"]);
+    sound.volume = 0.1;
 
     const box = new BoxColliderComponent([36, 48], (b: ComponentBaseEntity, c: any) => {});
     box.posModifiers = [8, 0];
@@ -189,7 +207,8 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(gravity);
     this.addComponent(lifeBar);
     this.addComponent(progression);
-    this.addComponent(new ChargeRender(stage));
+    this.addComponent(new ChargeRender(stage, lives <= 2));
+    this.addComponent(sound);
   }
 
   get invulnerable() {
@@ -325,7 +344,7 @@ export class Player extends ComponentBaseEntity {
     else if (dd === 1 && rend.currentAnimation !== "fireLeft") rend.setupAnimation("fireLeft");
 
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID);
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, { en: this.lives <= 2 });
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(this.chargeUsage);
   }
@@ -342,6 +361,11 @@ export class Player extends ComponentBaseEntity {
     if (rend.currentAnimation !== "dmg") rend.setupAnimation("dmg");
     this.life -= damage;
     if (this.life <= 0) this.destroy();
+    else {
+      const music = genMusicSheet(100, [{ n: "G2", d: 2, c: 2 }]);
+
+      this.getComponent<SoundComponent>("sound").play(music);
+    }
   }
 
   render(t: number, ca?: IVec): void {
