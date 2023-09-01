@@ -1,5 +1,5 @@
 import { PositionComponent } from "./components";
-import { IEntity, IVec } from "./contracts";
+import { IVec } from "./contracts";
 import { ComponentBaseEntity } from "./entities";
 
 // Movement dependent on delta-time

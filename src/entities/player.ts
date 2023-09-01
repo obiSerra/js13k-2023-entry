@@ -7,7 +7,7 @@ import {
   SoundComponent,
   SpriteRenderComponent,
 } from "../lib/components";
-import { ComponentType, IComponent, IEntity, IVec, Sprite } from "../lib/contracts";
+import { ComponentType, IComponent, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
 import { genMusicSheet } from "../lib/soundComponent";
@@ -73,7 +73,7 @@ class Progression extends HTMLComponent {
     this.show();
   }
   onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
-    const [x, y] = gs.session.pos;
+    const x = gs.session.pos[0];
     const progress = getProgress(x);
     this.el.innerHTML = `${progress}`;
     // console.log(gs.session);
@@ -512,8 +512,8 @@ export class LittleDemon extends ComponentBaseEntity {
   update(delta: number, gs?: GameState): void {
     this.action(delta, gs);
 
-    const pos = this.getComponent<PositionComponent>("position");
-    const rend = this.getComponent<SpriteRenderComponent>("render");
+    // const pos = this.getComponent<PositionComponent>("position");
+    // const rend = this.getComponent<SpriteRenderComponent>("render");
 
     // if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
     // if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");

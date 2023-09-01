@@ -1,7 +1,6 @@
-import { HTMLComponent, MenuComponent } from "../lib/components";
-import { IEntity } from "../lib/contracts";
+import { MenuComponent } from "../lib/components";
 import { ComponentBaseEntity } from "../lib/entities";
-import { Scene, GameState } from "../lib/gameState";
+import { GameState, Scene } from "../lib/gameState";
 
 class MainMenu extends ComponentBaseEntity {
   constructor(gs: GameState) {
@@ -35,8 +34,6 @@ export const menuScene = () => {
   return new Scene(
     async (gs: GameState, scene): Promise<string> =>
       new Promise((resolve, reject) => {
-        const { stage, gl } = gs;
-
         const menu = new MainMenu(gs);
 
         menu.btnClick("#new-game", () => {
@@ -51,7 +48,3 @@ export const menuScene = () => {
       })
   );
 };
-
-
-
-

@@ -1,5 +1,5 @@
 import { BoxColliderComponent, PositionComponent } from "./components";
-import { CollisionSensor, IEntity, IVec } from "./contracts";
+import { CollisionSensor, IVec } from "./contracts";
 import { ComponentBaseEntity } from "./entities";
 
 export const isCollide = (a: IVec, as: IVec, b: IVec, bs: IVec) => {

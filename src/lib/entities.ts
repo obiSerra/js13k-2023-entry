@@ -1,4 +1,4 @@
-import { IComponent, IEntity, IStage, IVec } from "./contracts";
+import { IComponent, IStage, IVec } from "./contracts";
 import { GameState } from "./gameState";
 
 export class ComponentBaseEntity implements ComponentBaseEntity {

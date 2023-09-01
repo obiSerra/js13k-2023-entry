@@ -1,3 +1,4 @@
+import { Enemy, EnemyData, LittleDemon, Player, demonSprite, enemySprite, playerSprite } from "../entities/player";
 import { resolveCollisions } from "../lib/collisions";
 import {
   BoxColliderComponent,
@@ -6,11 +7,10 @@ import {
   PositionComponent,
   StaticPositionComponent,
 } from "../lib/components";
-import { IEntity, IRenderComponent, IVec, Sprite } from "../lib/contracts";
+import { IRenderComponent, IVec } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState, Scene } from "../lib/gameState";
 import { isInView } from "../lib/utils";
-import { Enemy, EnemyData, LittleDemon, Player, demonSprite, enemySprite, playerSprite } from "../entities/player";
 // import { LifeBar } from "../entities/life";
 
 export class Ground extends ComponentBaseEntity {
@@ -28,17 +28,6 @@ export class Ground extends ComponentBaseEntity {
     this.addComponent(renderer);
     this.addComponent(box);
     this.name = name;
-  }
-
-  render(t: number, c: IVec) {
-    super.render(t, c);
-    const [x, y] = this.getComponent<PositionComponent>("position").p;
-    const ctx = this.stage.ctx;
-    ctx.beginPath();
-    ctx.font = "20px serif";
-    ctx.fillStyle = "white";
-    // ctx.fillText(this.name, x + c[0], y + c[1] + 20);
-    ctx.closePath();
   }
 }
 class LivesCountComponent extends HTMLComponent {
@@ -125,7 +114,6 @@ const generateMap = (gs: GameState, scene: Scene) => {
   let cnt = 0;
   let v = Math.floor(gs.stage.canvas.height / 2);
   let enemies = 0;
-  const tiles = [];
   // console.log("Map length", map.length);
   for (let i = 0; i < map.length; i++) {
     const tile = map.tile(i);
@@ -171,7 +159,6 @@ const generateMap = (gs: GameState, scene: Scene) => {
       scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
       cnt++;
     }
-
   }
   return map;
 };

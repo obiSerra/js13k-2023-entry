@@ -1,4 +1,4 @@
-import { IEntity, IVec } from "./contracts";
+import { IVec } from "./contracts";
 import { ComponentBaseEntity } from "./entities";
 import { GameLoop } from "./gameLoop";
 import { Stage } from "./stage";

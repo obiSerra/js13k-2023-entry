@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2015",
+    "target": "ES6",
     "module": "commonjs",
-    // "noUnusedLocals": false,
+    // "explainFiles": true
+    "noUnusedLocals": true
     // "noUnusedParameters": true
   }
 }

@@ -42,7 +42,7 @@ export class PositionComponent implements IComponent {
     this.a[1] = dir[1] ? 0 : this.a[1];
   }
   onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
-    const { solid, onCollide } = e.getComponent<BoxColliderComponent>("collider");
+    const { solid } = e.getComponent<BoxColliderComponent>("collider");
 
     const maxSpeed = this.maxSpeed;
     let {
@@ -224,12 +224,7 @@ export class GravityComponent implements IComponent {
     this.ev = !!ev ? ev : gravity * 100;
   }
   onUpdate(e: ComponentBaseEntity, delta: number): void {
-    const box = e.getComponent<BoxColliderComponent>("collider");
     const pos = e.getComponent<PositionComponent>("position");
-    const {
-      p: [x, y],
-      v,
-    } = pos;
 
     pos.accelerate([0, this.gravity]);
     // const accV = Math.max(v[1] + mXs(this.gravity, delta), th  is.ev);

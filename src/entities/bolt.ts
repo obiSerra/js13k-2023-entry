@@ -1,5 +1,5 @@
-import { PositionComponent, ImgRenderComponent, BoxColliderComponent, SpriteRenderComponent } from "../lib/components";
-import { IVec, IEntity, Sprite } from "../lib/contracts";
+import { BoxColliderComponent, PositionComponent, SpriteRenderComponent } from "../lib/components";
+import { IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
 import { Expire } from "../lib/utils";

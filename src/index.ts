@@ -166,45 +166,6 @@ class TutorialEntity extends ComponentBaseEntity {
   }
 }
 
-class EndgameEntity extends ComponentBaseEntity {
-  gs: GameState;
-  onSkip: () => void;
-  constructor(gs: GameState, onSkip: () => void) {
-    const { stage } = gs;
-    super(stage, []);
-    this.gs = gs;
-    this.onSkip = onSkip;
-    const html = new MenuComponent("#ingame-msg");
-
-    this.addComponent(html);
-  }
-  setContent(content: string) {
-    const comp = this.getComponent<MenuComponent>("menu");
-    comp.el.innerHTML = content;
-  }
-
-  init() {
-    // const c = [];
-    // c.push({ class: "menu-item", text: "continue", id: "continue" });
-    const comp = this.getComponent<MenuComponent>("menu");
-    // comp.el.innerHTML = storyContent;
-
-    comp.addListener("#skip", () => {
-      location.reload();
-    });
-
-    super.init();
-
-    comp.show();
-    this.gs.status = "paused";
-    this.gs.stage.canvas.classList.add("paused");
-  }
-
-  btnClick(sel: string, cb: () => void) {
-    this.getComponent<MenuComponent>("menu").addListener(sel, cb);
-  }
-}
-
 class Background extends ComponentBaseEntity {
   gs: GameState;
 
@@ -219,7 +180,7 @@ class Background extends ComponentBaseEntity {
   }
 
   update(delta: number, gs?: GameState): void {
-    const [x, y] = gs?.session?.pos || [0, 0];
+    // const [x, y] = gs?.session?.pos || [0, 0];
 
     // const bgs = [
     //   [800, ["#1520A6", "#0A1172"]],
@@ -230,7 +191,7 @@ class Background extends ComponentBaseEntity {
 
     // bgs.sort((a, b) => (b[0] as number) - (a[0] as number));
 
-    let c1 = ["#141729"];
+    // let c1 = ["#141729"];
     // for (let k of bgs) {
     //   const v = k[0] as number;
 

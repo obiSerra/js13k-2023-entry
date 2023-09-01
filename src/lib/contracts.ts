@@ -2,7 +2,6 @@ import { ComponentBaseEntity } from "./entities";
 import { GameState } from "./gameState";
 
 export type IVec = [number, number];
-export type IVecNullable = [number | null, number | null];
 
 export type ComponentType = "position" | "control" | "collider" | "render" | "gravity" | "sound" | "menu" | "html";
 
@@ -16,34 +15,6 @@ export interface IComponent {
 
 export interface IRenderComponent extends IComponent {
   renderPriority: number;
-}
-
-export interface RenderComponent extends IComponent {
-  type: "render";
-}
-
-export interface IEntity {
-  ID: string;
-  stage: IStage;
-  components: { [key: string]: IComponent[] };
-  pos?: IVec;
-  v?: IVec;
-  box?: IVec;
-  lastMv: IVec;
-  isColliding: boolean;
-  mass?: number;
-  init?(): void;
-  destroy?(): void;
-  render?(t: number, c: IVec): void;
-  update?(delta: number, gs?: GameState): void;
-  onUpdateStart?(delta: number, gs?: GameState): void;
-  onUpdateEnd?(delta: number, gs?: GameState): void;
-  onCollide(e: ComponentBaseEntity, c: CollisionSensors): void;
-  initComponent?(c: string): void;
-  componentList?(): IComponent[][];
-  addComponent?(c: IComponent): void;
-  getComponents<T extends IComponent>(c: string): T[];
-  getComponent<T extends IComponent>(c: string): T;
 }
 
 export interface IStage {
@@ -62,20 +33,11 @@ export type Sprite = {
   [key: string]: SpriteFrame;
 };
 
-export type SpriteAnimator = {
-  charSprite: Sprite;
-  spriteTime: number;
-  currentFrame: number;
-  direction: number;
-  currentSprite: string;
-};
-
 export type ColorMap = { colors: (string | null)[] };
 export type ImagePxsRaw = number[][];
 export type ImagePxsRawMap = { [key: string]: ImagePxsRaw } | ColorMap;
 
 export type ImagePxs = (string | null)[][];
-export type ImagePxsMap = { [key: string]: ImagePxs };
 
 export type Note = {
   n: string;
@@ -107,5 +69,9 @@ export type NoteFrequencies = { [k: string]: number };
 
 export type CollisionSensor = { d: number; t: any };
 
-export type CollisionSensors = [CollisionSensor | null, CollisionSensor | null, CollisionSensor | null, CollisionSensor | null];
-
+export type CollisionSensors = [
+  CollisionSensor | null,
+  CollisionSensor | null,
+  CollisionSensor | null,
+  CollisionSensor | null
+];
