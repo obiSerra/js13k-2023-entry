@@ -1,4 +1,6 @@
-import { Enemy, EnemyData, LittleDemon, Player, demonSprite, enemySprite, playerSprite } from "../entities/player";
+import { Enemy, EnemyData } from "../entities/enemy";
+import { LittleDemon, demonSprite } from "../entities/littleDemon";
+import { Player, enemySprite, playerSprite } from "../entities/player";
 import { resolveCollisions } from "../lib/collisions";
 import {
   BoxColliderComponent,
@@ -166,7 +168,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
 export const mainScene = () => {
   return new Scene(
     async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene; win: boolean }> =>
-      new Promise((resolve, reject) => {
+      new Promise(resolve => {
         const { gl } = gs;
         const player = new Player(gs, playerSprite(gs.images), [400, -10], gs.session.lives, () => {
           resolve({ gs, scene, win: false });

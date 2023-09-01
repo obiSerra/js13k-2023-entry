@@ -27,8 +27,6 @@ export const playerSprite: (images: any) => Sprite = images => {
     duckLeft: { frames: [s.roll_1_left, s.roll_2_left, s.roll_3_left, s.roll_4_left], changeTime: 50 },
     dmg: { frames: [s.dmg_1, s.idle_1], changeTime: 50 },
     dmgLeft: { frames: [s.dmg_1_left, s.idle_1], changeTime: 50 },
-    fire: { frames: [s.fire], changeTime: 200 },
-    fireLeft: { frames: [s.fire_left], changeTime: 200 },
   };
 };
 
@@ -39,15 +37,6 @@ export const enemySprite: (images: any) => Sprite = images => {
     idleLeft: { frames: [s.enemy_idle_1_left, s.enemy_idle_2_left], changeTime: 500 },
     dmg: { frames: [s.dmg_1, s.enemy_idle_1], changeTime: 50 },
     dmgLeft: { frames: [s.dmg_1_left, s.enemy_idle_1_left], changeTime: 50 },
-  };
-};
-
-export const demonSprite: (images: any) => Sprite = images => {
-  const d = images["demon"];
-  return {
-    idle: { frames: [d.dem_1, d.dem_2, d.dem_3], changeTime: 300 },
-    dmg: { frames: [d.dmg_1, d.dem_1], changeTime: 50 },
-    dmgLeft: { frames: [d.dmg_1_left, d.dem_1], changeTime: 50 },
   };
 };
 
@@ -263,7 +252,7 @@ export class Player extends ComponentBaseEntity {
     // this.status = "walk-left";
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.currentAnimation !== "runLeft") rend.setupAnimation("runLeft");
+    if (rend.cA !== "runLeft") rend.setupAnimation("runLeft");
     let accSpeed = -this.speed;
 
     const exceeding = Math.abs(pos.v[0] - this.speed) - this.maxRun;
@@ -279,7 +268,7 @@ export class Player extends ComponentBaseEntity {
     // this.status = "walk-right";
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.currentAnimation !== "run") rend.setupAnimation("run");
+    if (rend.cA !== "run") rend.setupAnimation("run");
     let accSpeed = this.speed;
 
     const exceeding = Math.abs(pos.v[0] + this.speed) - this.maxRun;
@@ -305,8 +294,8 @@ export class Player extends ComponentBaseEntity {
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
 
-    if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
-    if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
+    if (pos.direction === 1 && rend.cA !== "idleLeft") rend.setupAnimation("idleLeft");
+    if (pos.direction === -1 && rend.cA !== "idle") rend.setupAnimation("idle");
 
     if (this.onTheGround) {
       pos.v = [0, pos.v[1]];
@@ -322,8 +311,8 @@ export class Player extends ComponentBaseEntity {
     const rend = this.getComponent<SpriteRenderComponent>("render");
     const d = pos.direction;
 
-    if (d === -1 && rend.currentAnimation !== "duck") rend.setupAnimation("duck");
-    else if (d === 1 && rend.currentAnimation !== "duckLeft") rend.setupAnimation("duckLeft");
+    if (d === -1 && rend.cA !== "duck") rend.setupAnimation("duck");
+    else if (d === 1 && rend.cA !== "duckLeft") rend.setupAnimation("duckLeft");
     pos.v = [0, pos.v[1]];
     pos.a = [300 * -pos.direction, pos.a[1]];
 
@@ -336,12 +325,7 @@ export class Player extends ComponentBaseEntity {
   magicBolt() {
     if (this.fireCharge.current < 75 || this.rolling) return;
     const pos = this.getComponent<PositionComponent>("position");
-    const rend = this.getComponent<SpriteRenderComponent>("render");
     const d = pos.direction * -400;
-    const dd = pos.direction;
-
-    if (dd === -1 && rend.currentAnimation !== "fire") rend.setupAnimation("fire");
-    else if (dd === 1 && rend.currentAnimation !== "fireLeft") rend.setupAnimation("fireLeft");
 
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, { en: this.lives <= 2 });
@@ -358,7 +342,7 @@ export class Player extends ComponentBaseEntity {
     if (this.invulnerable) return;
 
     const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.currentAnimation !== "dmg") rend.setupAnimation("dmg");
+    if (rend.cA !== "dmg") rend.setupAnimation("dmg");
     this.life -= damage;
     if (this.life <= 0) this.destroy();
     else {
@@ -370,212 +354,5 @@ export class Player extends ComponentBaseEntity {
 
   render(t: number, ca?: IVec): void {
     super.render(t, ca);
-  }
-}
-const enemyFireThrottle = new Throttle(100);
-export type EnemyData = {
-  boltCost?: number;
-};
-export class Enemy extends ComponentBaseEntity {
-  gs: GameState;
-  fireCharge: Rechargeable = new Rechargeable(1000, 1000);
-  firing: boolean = false;
-  data: EnemyData = {};
-  eType: string = "Enemy";
-  energy: number = 50;
-  constructor(gs: GameState, sprite: Sprite, pos: IVec, data: EnemyData = {}) {
-    const { stage } = gs;
-    super(stage, []);
-    const position = new PositionComponent(pos);
-    const renderer = new SpriteRenderComponent(sprite, "idle");
-    const box = new BoxColliderComponent([48, 48], (b: ComponentBaseEntity, c: any) => {});
-    const gravity = new GravityComponent();
-    this.gs = gs;
-    this.data = data;
-
-    this.addComponent(position);
-    this.addComponent(renderer);
-    this.addComponent(box);
-    this.addComponent(gravity);
-  }
-
-  update(delta: number, gs: GameState): void {
-    this.action(delta, gs);
-    this.fireCharge.recharge(delta);
-    const pos = this.getComponent<PositionComponent>("position");
-    const rend = this.getComponent<SpriteRenderComponent>("render");
-
-    if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
-    if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
-
-    super.update(delta, gs);
-  }
-
-  action(delta: number, gs: GameState) {
-    const player = gs.scene.getEntities().find(e => e.eType === "Player") as Player;
-    if (!player) return;
-    const [px, py] = player.getComponent<PositionComponent>("position").p;
-    const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
-    const pos = this.getComponent<PositionComponent>("position");
-    const {
-      p: [x, y],
-      direction: d,
-    } = pos;
-    const [w, h] = this.getComponent<BoxColliderComponent>("collider").box;
-
-    const [[cpx, cpy], [cx, cy]] = [
-      [px + pw / 2, py + ph / 2],
-      [x + w / 2, y + h / 2],
-    ];
-
-    const dist = Math.sqrt(Math.pow(cpx - cx, 2) + Math.pow(cpy - cy, 2));
-    const vDist = Math.sqrt(Math.pow(cpy - cy, 2));
-
-    // Turn
-    if (px < x && d !== 1) pos.direction = 1;
-    else if (px > x && d !== -1) pos.direction = -1;
-
-    // Attack - to move
-
-    if (this.fireCharge.current < 350) this.firing = false;
-    const startBurst = this.firing || this.fireCharge.isFull;
-    // const startBurst = true;
-
-    if (dist < 600 && vDist < 100 && startBurst) {
-      this.firing = true;
-      enemyFireThrottle.call(delta, () => {
-        this.magicBolt();
-      });
-    } else {
-    }
-  }
-
-  magicBolt() {
-    const boltCost = this?.data?.boltCost || 550;
-    if (this.fireCharge.current < boltCost) return;
-    const pos = this.getComponent<PositionComponent>("position");
-    const d = pos.direction * -400;
-    const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID);
-    this.gs.scene.addEntity(bolt);
-    this.fireCharge.use(boltCost);
-  }
-  takeDamage(dmg: number) {
-    const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.currentAnimation !== "dmg") {
-      rend.setupAnimation("dmg");
-      setTimeout(() => rend.setupAnimation("idle"), 100);
-    }
-    this.energy -= dmg;
-    if (this.energy <= 0) this.gs.scene.removeEntity(this);
-  }
-}
-
-export class LittleDemon extends ComponentBaseEntity {
-  gs: GameState;
-  triggered: boolean = false;
-  data: EnemyData = {};
-  energy: number = 50;
-  speed: number = 100;
-  maxDist: number = 500;
-  eType: string = "LittleDemon";
-  constructor(gs: GameState, sprite: Sprite, pos: IVec, data: any = {}) {
-    const { stage } = gs;
-    super(stage, []);
-
-    const position = new PositionComponent(pos, [0, 0], [400, 400]);
-    // const renderer = new ImgRenderComponent(gs.images["static"].demonRender);
-
-    const renderer = new SpriteRenderComponent(sprite, "idle");
-    const box = new BoxColliderComponent([30, 30], (b: ComponentBaseEntity, d: any) => {
-      if (b.eType === "Player" && !this.triggered) {
-        this.triggered = true;
-        gs.scene.removeEntity(this);
-
-        (b as Player)?.takeDamage(50);
-      }
-    });
-    box.posModifiers = [5, 5];
-    // box.solid = false;
-    const gravity = new GravityComponent();
-    this.gs = gs;
-    this.speed = data?.speed || this.speed;
-    this.maxDist = data?.maxDist || this.maxDist;
-    this.data = data;
-
-    this.addComponent(position);
-    this.addComponent(renderer);
-    this.addComponent(box);
-    this.addComponent(gravity);
-  }
-
-  update(delta: number, gs?: GameState): void {
-    this.action(delta, gs);
-
-    // const pos = this.getComponent<PositionComponent>("position");
-    // const rend = this.getComponent<SpriteRenderComponent>("render");
-
-    // if (pos.direction === 1 && rend.currentAnimation !== "idleLeft") rend.setupAnimation("idleLeft");
-    // if (pos.direction === -1 && rend.currentAnimation !== "idle") rend.setupAnimation("idle");
-
-    super.update(delta, gs);
-  }
-
-  action(delta: number, gs: GameState) {
-    const player = gs.scene.getEntities().find(e => e.eType === "Player") as Player;
-    if (!player) return;
-    const [px, py] = player.getComponent<PositionComponent>("position").p;
-    const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
-    const pos = this.getComponent<PositionComponent>("position");
-    const {
-      p: [x, y],
-      direction: d,
-    } = pos;
-    const [w, h] = this.getComponent<BoxColliderComponent>("collider").box;
-
-    const [[cpx, cpy], [cx, cy]] = [
-      [px + pw / 2, py + ph / 2],
-      [x + w / 2, y + h / 2],
-    ];
-
-    const dist = Math.sqrt(Math.pow(cpx - cx, 2) + Math.pow(cpy - cy, 2));
-    const vDist = Math.sqrt(Math.pow(cpy - cy, 2));
-
-    if (vDist > 20) return;
-
-    if (px < x && d !== 1) pos.direction = 1;
-    else if (px > x && d !== -1) pos.direction = -1;
-
-    if (dist < this.maxDist) {
-      pos.accelerate([this.speed * -pos.direction, 0]);
-    }
-    // console.log(dist, vDist);
-
-    // Turn
-
-    // // Attack - to move
-
-    // if (this.fireCharge.current < 350) this.firing = false;
-    // const startBurst = this.firing || this.fireCharge.isFull;
-    // // const startBurst = true;
-
-    // if (dist < 600 && vDist < 100 && startBurst) {
-    //   this.firing = true;
-    //   enemyFireThrottle.call(delta, () => {
-    //     this.magicBolt();
-    //   });
-    // } else {
-    // }
-  }
-  takeDamage(dmg: number) {
-    const v = this.getComponent<PositionComponent>("position").v;
-    this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -50]);
-    const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.currentAnimation !== "dmg") {
-      rend.setupAnimation("dmg");
-      setTimeout(() => rend.setupAnimation("idle"), 100);
-    }
-    this.energy -= dmg;
-    if (this.energy <= 0) this.gs.scene.removeEntity(this);
   }
 }

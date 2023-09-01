@@ -39,8 +39,8 @@ export class ComponentBaseEntity implements ComponentBaseEntity {
   render(t: number, ca: IVec = [0, 0]): void {
     this.componentList().forEach(cs => cs.forEach(c => (c.onRender ? c.onRender(this, t, ca) : null)));
   }
-  onUpdateStart?(delta: number, gs: GameState): void {}
-  onUpdateEnd?(delta: number, gs?: GameState): void {}
+  onUpdateStart?(d: number, gs: GameState): void {}
+  onUpdateEnd?(d: number, gs?: GameState): void {}
   update?(delta: number, gameState?: GameState): void {
     this?.onUpdateStart(delta, gameState);
     this.componentList().forEach(cs => {

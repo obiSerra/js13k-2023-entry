@@ -75,3 +75,5 @@ export type CollisionSensors = [
   CollisionSensor | null,
   CollisionSensor | null
 ];
+
+export type ImgFnMap = { [key: string]: { d: IVec; f: RenderFn } };

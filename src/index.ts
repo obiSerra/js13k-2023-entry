@@ -244,7 +244,6 @@ const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string) =>
   let win = false;
 
   while (gs.session.lives > 0) {
-    console.log("Running main scene");
     gs.scene = mainScene();
     setTimeout(async () => {
       if (showTutorial) {

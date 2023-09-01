@@ -145,7 +145,7 @@ export class SpriteRenderComponent implements IComponent {
   stage: IStage;
   time: number;
   currentFrame: number;
-  currentAnimation: string;
+  cA: string;
   renderPriority: number;
 
   constructor(sprite: Sprite, defaultAnimation: string, renderPriority: number = 0) {
@@ -160,17 +160,17 @@ export class SpriteRenderComponent implements IComponent {
   setupAnimation(animationName: string) {
     this.time = 0;
     this.currentFrame = 0;
-    this.currentAnimation = animationName;
+    this.cA = animationName;
   }
   onRender(e: ComponentBaseEntity, t: number, c: IVec): void {
     const pos = e.getComponent<PositionComponent>("position").p;
     if (!pos) throw new Error("PositionComponent not found");
     const [x, y] = pos;
 
-    const an = this.sprite[this.currentAnimation];
+    const an = this.sprite[this.cA];
     this.time += t;
 
-    if (!an) console.error(`Animation ${this.currentAnimation} not found`);
+    // if (!an) console.error(`Animation ${this.cA} not found`);
 
     if (this.time > an.changeTime) {
       this.time = 0;
@@ -237,7 +237,7 @@ export class GravityComponent implements IComponent {
 const noteToTone = (note: string) => {
   const freq = noteFrequencies[note];
   if (typeof freq === "undefined") {
-    console.error(`Note ${note} not found`);
+    // console.error(`Note ${note} not found`);
     return 0;
   }
   return freq;

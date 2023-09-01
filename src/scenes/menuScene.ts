@@ -33,7 +33,7 @@ class MainMenu extends ComponentBaseEntity {
 export const menuScene = () => {
   return new Scene(
     async (gs: GameState, scene): Promise<string> =>
-      new Promise((resolve, reject) => {
+      new Promise((resolve) => {
         const menu = new MainMenu(gs);
 
         menu.btnClick("#new-game", () => {

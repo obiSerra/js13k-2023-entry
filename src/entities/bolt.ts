@@ -3,7 +3,9 @@ import { IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
 import { Expire } from "../lib/utils";
-import { Enemy, LittleDemon, Player } from "./player";
+import { Enemy } from "./enemy";
+import { LittleDemon } from "./littleDemon";
+import { Player } from "./player";
 
 export type MagicBoltData = {
   dmg?: number;
@@ -68,11 +70,11 @@ export class MagicBolt extends ComponentBaseEntity {
     this.addComponent(box);
 
     if (this.data?.en) {
-      if (d === -1 && renderer.currentAnimation !== "enhBolt") renderer.setupAnimation("enhBolt");
-      else if (d === 1 && renderer.currentAnimation !== "enhBoltLeft") renderer.setupAnimation("enhBoltLeft");
+      if (d === -1 && renderer.cA !== "enhBolt") renderer.setupAnimation("enhBolt");
+      else if (d === 1 && renderer.cA !== "enhBoltLeft") renderer.setupAnimation("enhBoltLeft");
     } else {
-      if (d === -1 && renderer.currentAnimation !== "bolt") renderer.setupAnimation("bolt");
-      else if (d === 1 && renderer.currentAnimation !== "boltLeft") renderer.setupAnimation("boltLeft");
+      if (d === -1 && renderer.cA !== "bolt") renderer.setupAnimation("bolt");
+      else if (d === 1 && renderer.cA !== "boltLeft") renderer.setupAnimation("boltLeft");
     }
   }
   endTime() {
@@ -86,7 +88,7 @@ export class MagicBolt extends ComponentBaseEntity {
   }
 
   render(t: number, ca?: IVec): void {
-    // if (rend.currentAnimation !== "bolt") rend.setupAnimation("bolt");
+    // if (rend.cA !== "bolt") rend.setupAnimation("bolt");
     super.render(t, ca);
   }
 
@@ -94,12 +96,12 @@ export class MagicBolt extends ComponentBaseEntity {
     const rend = this.getComponent<SpriteRenderComponent>("render");
 
     if (this.data?.en) {
-      if (rend.currentAnimation !== "enhBoltExplode") rend.setupAnimation("enhBoltExplode");
+      if (rend.cA !== "enhBoltExplode") rend.setupAnimation("enhBoltExplode");
     } else {
-      if (rend.currentAnimation !== "boltExplode") rend.setupAnimation("boltExplode");
+      if (rend.cA !== "boltExplode") rend.setupAnimation("boltExplode");
     }
 
-    // if (rend.currentAnimation !== "boltExplode") rend.setupAnimation("boltExplode");
+    // if (rend.cA !== "boltExplode") rend.setupAnimation("boltExplode");
     this.getComponent<PositionComponent>("position").v = [0, 0];
     this.getComponent<BoxColliderComponent>("collider").onCollide = null;
     setTimeout(() => {
