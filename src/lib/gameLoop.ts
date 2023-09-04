@@ -1,5 +1,5 @@
 import { IStage } from "./contracts";
-import { ra, d } from "./dom";
+import { ra } from "./dom";
 
 export type UpdateCb = (delta: number) => void;
 
@@ -30,7 +30,7 @@ export class GameLoop {
     this.lastUpdateCall = 0;
     this.renderFps = 0;
     this.updateFps = 0;
-    this.debugInfoCreate();
+    // this.debugInfoCreate();
   }
   onStart(startCb: () => void) {
     this.startCb = startCb;
@@ -64,37 +64,13 @@ export class GameLoop {
     this.state = RUNNING_ST;
     if (this.resumeCb) this.resumeCb();
   }
-
-  monoLoop() {
-    ra((time: number) => {
-      if (this.state === RUNNING_ST) {
-        const now = +new Date();
-
-        const delta = now - this.lastUpdateCall;
-        this.updateFps = Math.floor(1000 / delta);
-        this.lastUpdateCall = now;
-        if (this.updateCb) this.updateCb(delta);
-      }
-
-      const s = this.stage;
-      s.ctx.clearRect(0, 0, s.canvas.width, s.canvas.height);
-      const delta = time - this.lastRenderCall;
-      this.renderFps = Math.floor(1000 / delta);
-      this.renderDebug();
-      this.lastRenderCall = time;
-
-      if (this.renderCb) this.renderCb(delta);
-      this.monoLoop();
-    });
-  }
-
   renderLoop() {
     ra((time: number) => {
       const s = this.stage;
       s.ctx.clearRect(0, 0, s.canvas.width, s.canvas.height);
       const delta = time - this.lastRenderCall;
       this.renderFps = Math.floor(1000 / delta);
-      this.renderDebug();
+      // this.renderDebug();
       this.lastRenderCall = time;
 
       if (this.renderCb) this.renderCb(delta);
@@ -122,18 +98,18 @@ export class GameLoop {
     this.renderLoop();
   }
 
-  renderDebug() {
-    const dEl = document.querySelector(".debug-info");
-    let debugString = this.renderFps.toString() + " rFPS";
-    debugString += " /" + this.updateFps.toString() + " uFPS";
-    debugString += " (" + (+new Date()).toString() + ")";
-    dEl.innerHTML = debugString;
-  }
+  // renderDebug() {
+  //   const dEl = document.querySelector(".debug-info");
+  //   let debugString = this.renderFps.toString() + " rFPS";
+  //   debugString += " /" + this.updateFps.toString() + " uFPS";
+  //   debugString += " (" + (+new Date()).toString() + ")";
+  //   dEl.innerHTML = debugString;
+  // }
 
-  debugInfoCreate() {
-    const debugInfo = d.createElement("div");
-    debugInfo.className = "debug-info";
-    debugInfo.innerHTML = "Game loop not started yet!";
-    d.body.append(debugInfo);
-  }
+  // debugInfoCreate() {
+  //   const debugInfo = d.createElement("div");
+  //   debugInfo.className = "debug-info";
+  //   debugInfo.innerHTML = "Game loop not started yet!";
+  //   d.body.append(debugInfo);
+  // }
 }

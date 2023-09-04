@@ -99,12 +99,7 @@ export const pxImages: [string, number, ImagePxsRawMap][] = [
     "bolt",
     2,
     {
-      bolt_1: enhancedBolt["bolt_1"],
-      bolt_2: enhancedBolt["bolt_2"],
-      bolt_explode_1: enhancedBolt["bolt_explode_1"],
-      bolt_explode_2: enhancedBolt["bolt_explode_2"],
-      bolt_explode_3: enhancedBolt["bolt_explode_3"],
-      colors: enhancedBolt["colors"] as string[],
+      ...enhancedBolt,
     },
   ],
 ];
