@@ -152,12 +152,12 @@ export class SpriteRenderComponent implements IComponent {
     this.type = "render";
     this.sprite = sprite;
     this.renderPriority = renderPriority;
-    this.setupAnimation(defaultAnimation);
+    this.sAnim(defaultAnimation);
   }
   onInit(e: ComponentBaseEntity): void {
     this.stage = e.stage;
   }
-  setupAnimation(animationName: string) {
+  sAnim(animationName: string) {
     this.time = 0;
     this.currentFrame = 0;
     this.cA = animationName;

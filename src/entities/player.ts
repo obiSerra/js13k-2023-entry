@@ -20,13 +20,13 @@ export const playerSprite: (images: any) => Sprite = images => {
   const s = images["shaman"];
   return {
     idle: { frames: [s.idle_1, s.idle_1, s.idle_2, s.idle_2, s.idle_1], changeTime: 250 },
-    idleLeft: { frames: [s.idle_1_left, s.idle_2_left], changeTime: 500 },
+    idleL: { frames: [s.idle_1_left, s.idle_2_left], changeTime: 500 },
     run: { frames: [s.run_1, s.idle_1], changeTime: 150 },
-    runLeft: { frames: [s.run_1_left, s.idle_1_left], changeTime: 150 },
+    runL: { frames: [s.run_1_left, s.idle_1_left], changeTime: 150 },
     duck: { frames: [s.roll_1, s.roll_2, s.roll_3, s.roll_4], changeTime: 50 },
-    duckLeft: { frames: [s.roll_1_left, s.roll_2_left, s.roll_3_left, s.roll_4_left], changeTime: 50 },
+    duckL: { frames: [s.roll_1_left, s.roll_2_left, s.roll_3_left, s.roll_4_left], changeTime: 50 },
     dmg: { frames: [s.dmg_1, s.idle_1], changeTime: 50 },
-    dmgLeft: { frames: [s.dmg_1_left, s.idle_1], changeTime: 50 },
+    dmgL: { frames: [s.dmg_1_left, s.idle_1], changeTime: 50 },
   };
 };
 
@@ -34,9 +34,9 @@ export const enemySprite: (images: any) => Sprite = images => {
   const s = images["shaman"];
   return {
     idle: { frames: [s.enemy_idle_1, s.enemy_idle_2], changeTime: 500 },
-    idleLeft: { frames: [s.enemy_idle_1_left, s.enemy_idle_2_left], changeTime: 500 },
+    idleL: { frames: [s.enemy_idle_1_left, s.enemy_idle_2_left], changeTime: 500 },
     dmg: { frames: [s.dmg_1, s.enemy_idle_1], changeTime: 50 },
-    dmgLeft: { frames: [s.dmg_1_left, s.enemy_idle_1_left], changeTime: 50 },
+    dmgL: { frames: [s.dmg_1_left, s.enemy_idle_1_left], changeTime: 50 },
   };
 };
 
@@ -133,7 +133,7 @@ export class Player extends ComponentBaseEntity {
     const renderer = new SpriteRenderComponent(sprite, "idle");
 
     const downListeners = {
-      ArrowLeft: () => {
+      ArrowL: () => {
         this.status = "walk-left";
       },
       ArrowRight: () => {
@@ -154,7 +154,7 @@ export class Player extends ComponentBaseEntity {
       },
     };
     const upListeners = {
-      ArrowLeft: () => {
+      ArrowL: () => {
         this.status = "idle";
       },
       ArrowRight: () => {
@@ -223,7 +223,7 @@ export class Player extends ComponentBaseEntity {
       this.rollCharge.recharge(delta);
       this._resetBox();
       if (this.status === "walk-left") {
-        this.walkLeft();
+        this.walkL();
       } else if (this.status === "walk-right") {
         this.walkRight();
       } else if (this.status === "duck") {
@@ -248,11 +248,11 @@ export class Player extends ComponentBaseEntity {
     this.getComponent<SpriteRenderComponent>("render").imgPos = [0, 0];
     this.getComponent<BoxColliderComponent>("collider").box = [36, 48];
   }
-  walkLeft() {
+  walkL() {
     // this.status = "walk-left";
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.cA !== "runLeft") rend.setupAnimation("runLeft");
+    if (rend.cA !== "runL") rend.sAnim("runL");
     let accSpeed = -this.speed;
 
     const exceeding = Math.abs(pos.v[0] - this.speed) - this.maxRun;
@@ -268,7 +268,7 @@ export class Player extends ComponentBaseEntity {
     // this.status = "walk-right";
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.cA !== "run") rend.setupAnimation("run");
+    if (rend.cA !== "run") rend.sAnim("run");
     let accSpeed = this.speed;
 
     const exceeding = Math.abs(pos.v[0] + this.speed) - this.maxRun;
@@ -294,8 +294,8 @@ export class Player extends ComponentBaseEntity {
     const pos = this.getComponent<PositionComponent>("position");
     const rend = this.getComponent<SpriteRenderComponent>("render");
 
-    if (pos.direction === 1 && rend.cA !== "idleLeft") rend.setupAnimation("idleLeft");
-    if (pos.direction === -1 && rend.cA !== "idle") rend.setupAnimation("idle");
+    if (pos.direction === 1 && rend.cA !== "idleL") rend.sAnim("idleL");
+    if (pos.direction === -1 && rend.cA !== "idle") rend.sAnim("idle");
 
     if (this.onTheGround) {
       pos.v = [0, pos.v[1]];
@@ -311,8 +311,8 @@ export class Player extends ComponentBaseEntity {
     const rend = this.getComponent<SpriteRenderComponent>("render");
     const d = pos.direction;
 
-    if (d === -1 && rend.cA !== "duck") rend.setupAnimation("duck");
-    else if (d === 1 && rend.cA !== "duckLeft") rend.setupAnimation("duckLeft");
+    if (d === -1 && rend.cA !== "duck") rend.sAnim("duck");
+    else if (d === 1 && rend.cA !== "duckL") rend.sAnim("duckL");
     pos.v = [0, pos.v[1]];
     pos.a = [300 * -pos.direction, pos.a[1]];
 
@@ -342,7 +342,7 @@ export class Player extends ComponentBaseEntity {
     if (this.invulnerable) return;
 
     const rend = this.getComponent<SpriteRenderComponent>("render");
-    if (rend.cA !== "dmg") rend.setupAnimation("dmg");
+    if (rend.cA !== "dmg") rend.sAnim("dmg");
     this.life -= damage;
     if (this.life <= 0) this.destroy();
     else {

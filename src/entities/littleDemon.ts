@@ -10,7 +10,7 @@ export const demonSprite: (images: any) => Sprite = images => {
   return {
     idle: { frames: [d.dem_1, d.dem_2, d.dem_3], changeTime: 300 },
     dmg: { frames: [d.dmg_1, d.dem_1], changeTime: 50 },
-    dmgLeft: { frames: [d.dmg_1_left, d.dem_1], changeTime: 50 },
+    dmgL: { frames: [d.dmg_1_left, d.dem_1], changeTime: 50 },
   };
 };
 
@@ -58,8 +58,8 @@ export class LittleDemon extends ComponentBaseEntity {
     // const pos = this.getComponent<PositionComponent>("position");
     // const rend = this.getComponent<SpriteRenderComponent>("render");
 
-    // if (pos.direction === 1 && rend.cA !== "idleLeft") rend.setupAnimation("idleLeft");
-    // if (pos.direction === -1 && rend.cA !== "idle") rend.setupAnimation("idle");
+    // if (pos.direction === 1 && rend.cA !== "idleL") rend.sAnim("idleL");
+    // if (pos.direction === -1 && rend.cA !== "idle") rend.sAnim("idle");
 
     super.update(delta, gs);
   }
@@ -115,8 +115,8 @@ export class LittleDemon extends ComponentBaseEntity {
     this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -50]);
     const rend = this.getComponent<SpriteRenderComponent>("render");
     if (rend.cA !== "dmg") {
-      rend.setupAnimation("dmg");
-      setTimeout(() => rend.setupAnimation("idle"), 100);
+      rend.sAnim("dmg");
+      setTimeout(() => rend.sAnim("idle"), 100);
     }
     this.energy -= dmg;
     if (this.energy <= 0) this.gs.scene.removeEntity(this);

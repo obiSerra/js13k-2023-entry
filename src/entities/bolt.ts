@@ -18,10 +18,10 @@ const boltSprite: (images: any) => Sprite = images => {
   return {
     bolt: { frames: [s.bolt_1, s.bolt_2], changeTime: 50 },
     boltExplode: { frames: [s.bolt_explode_1, s.bolt_explode_2, s.bolt_explode_3], changeTime: 50 },
-    boltLeft: { frames: [s.bolt_1_left, s.bolt_2_left], changeTime: 50 },
+    boltL: { frames: [s.bolt_1_left, s.bolt_2_left], changeTime: 50 },
     enhBolt: { frames: [b.bolt_1, b.bolt_2], changeTime: 50 },
     enhBoltExplode: { frames: [b.bolt_explode_1, b.bolt_explode_2, b.bolt_explode_3], changeTime: 50 },
-    enhBoltLeft: { frames: [b.bolt_1_left, b.bolt_2_left], changeTime: 50 },
+    enhBoltL: { frames: [b.bolt_1_left, b.bolt_2_left], changeTime: 50 },
   };
 };
 export class MagicBolt extends ComponentBaseEntity {
@@ -70,11 +70,11 @@ export class MagicBolt extends ComponentBaseEntity {
     this.addComponent(box);
 
     if (this.data?.en) {
-      if (d === -1 && renderer.cA !== "enhBolt") renderer.setupAnimation("enhBolt");
-      else if (d === 1 && renderer.cA !== "enhBoltLeft") renderer.setupAnimation("enhBoltLeft");
+      if (d === -1 && renderer.cA !== "enhBolt") renderer.sAnim("enhBolt");
+      else if (d === 1 && renderer.cA !== "enhBoltL") renderer.sAnim("enhBoltL");
     } else {
-      if (d === -1 && renderer.cA !== "bolt") renderer.setupAnimation("bolt");
-      else if (d === 1 && renderer.cA !== "boltLeft") renderer.setupAnimation("boltLeft");
+      if (d === -1 && renderer.cA !== "bolt") renderer.sAnim("bolt");
+      else if (d === 1 && renderer.cA !== "boltL") renderer.sAnim("boltL");
     }
   }
   endTime() {
@@ -88,7 +88,7 @@ export class MagicBolt extends ComponentBaseEntity {
   }
 
   render(t: number, ca?: IVec): void {
-    // if (rend.cA !== "bolt") rend.setupAnimation("bolt");
+    // if (rend.cA !== "bolt") rend.sAnim("bolt");
     super.render(t, ca);
   }
 
@@ -96,12 +96,12 @@ export class MagicBolt extends ComponentBaseEntity {
     const rend = this.getComponent<SpriteRenderComponent>("render");
 
     if (this.data?.en) {
-      if (rend.cA !== "enhBoltExplode") rend.setupAnimation("enhBoltExplode");
+      if (rend.cA !== "enhBoltExplode") rend.sAnim("enhBoltExplode");
     } else {
-      if (rend.cA !== "boltExplode") rend.setupAnimation("boltExplode");
+      if (rend.cA !== "boltExplode") rend.sAnim("boltExplode");
     }
 
-    // if (rend.cA !== "boltExplode") rend.setupAnimation("boltExplode");
+    // if (rend.cA !== "boltExplode") rend.sAnim("boltExplode");
     this.getComponent<PositionComponent>("position").v = [0, 0];
     this.getComponent<BoxColliderComponent>("collider").onCollide = null;
     setTimeout(() => {
