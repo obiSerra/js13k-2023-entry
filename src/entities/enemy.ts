@@ -18,6 +18,7 @@ export class Enemy extends ComponentBaseEntity {
   data: EnemyData = {};
   eType: string = "Enemy";
   energy: number = 50;
+  hits: Set<string> = new Set();
   constructor(gs: GameState, sprite: Sprite, pos: IVec, data: EnemyData = {}) {
     const { stage } = gs;
     super(stage, []);
@@ -95,7 +96,10 @@ export class Enemy extends ComponentBaseEntity {
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(boltCost);
   }
-  takeDamage(dmg: number) {
+  takeDamage(dmg: number, id: string) {
+    if (this.hits.has(id)) return;
+    this.hits.add(id);
+
     const rend = this.getComponent<SpriteRenderComponent>("render");
     if (rend.cA !== "dmg") {
       rend.sAnim("dmg");

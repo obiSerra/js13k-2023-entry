@@ -35,6 +35,9 @@ export class ComponentBaseEntity implements ComponentBaseEntity {
     if (!this.components[c.type]) this.components[c.type] = [];
     this.components[c.type].push(c);
   }
+  replaceComponent(c: IComponent) {
+    this.components[c.type] = [c];
+  }
 
   render(t: number, ca: IVec = [0, 0]): void {
     this.componentList().forEach(cs => cs.forEach(c => (c.onRender ? c.onRender(this, t, ca) : null)));

@@ -51,24 +51,26 @@ const rollImage = (img: number[][], t = 1) => {
 
 // "#2a2203", "#f9c4b4", "#000000", "#0f0c00", "#1d7ba7", "#c22828", "#4a4a4a"
 
-const groundBlock: RenderFn = (ctx, pos) => {
-  let [x, y] = pos;
-  x = Math.round(x);
-  y = Math.round(y);
-  const w = 32;
-  const h = 32;
-  ctx.fillStyle = "#DFA878";
-  ctx.beginPath();
-  ctx.rect(x - w, y - h, w, 10);
-  ctx.rect(x - w, y - 10, w, 10);
+const groundBlock: (c?: string) => RenderFn =
+  (color = "#DFA878") =>
+  (ctx, pos) => {
+    let [x, y] = pos;
+    x = Math.round(x);
+    y = Math.round(y);
+    const w = 32;
+    const h = 32;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.rect(x - w, y - h, w, 10);
+    ctx.rect(x - w, y - 10, w, 10);
 
-  ctx.rect(x - w, y - h, 10, h);
-  ctx.rect(x, y - h, 10, h);
-  ctx.closePath();
+    ctx.rect(x - w, y - h, 10, h);
+    ctx.rect(x, y - h, 10, h);
+    ctx.closePath();
 
-  ctx.fill();
-  ctx.stroke();
-};
+    ctx.fill();
+    ctx.stroke();
+  };
 
 // const background: RenderFn = (ctx, pos) => {
 //   ctx.beginPath();
@@ -79,7 +81,8 @@ const groundBlock: RenderFn = (ctx, pos) => {
 // }
 
 export const staticImages: ImgFnMap = {
-  groundBlock: { d: [32, 32], f: groundBlock },
+  groundBlock: { d: [32, 32], f: groundBlock() },
+  dmgGroundBlock: { d: [32, 32], f: groundBlock("#3e250f") },
 };
 export const pxImages: [string, number, ImagePxsRawMap][] = [
   ["demon", 2, { ...littleDemonPx, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],

@@ -22,6 +22,7 @@ export class LittleDemon extends ComponentBaseEntity {
   speed: number = 100;
   maxDist: number = 500;
   eType: string = "LittleDemon";
+  hits: Set<string> = new Set();
   constructor(gs: GameState, sprite: Sprite, pos: IVec, data: any = {}) {
     const { stage } = gs;
     super(stage, []);
@@ -110,7 +111,10 @@ export class LittleDemon extends ComponentBaseEntity {
     // } else {
     // }
   }
-  takeDamage(dmg: number) {
+  takeDamage(dmg: number, id: string) {
+    if (this.hits.has(id)) return;
+    this.hits.add(id);
+    console.log("Hit enemy", dmg);
     const v = this.getComponent<PositionComponent>("position").v;
     this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -50]);
     const rend = this.getComponent<SpriteRenderComponent>("render");

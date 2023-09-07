@@ -18,9 +18,13 @@ import { isInView } from "../lib/utils";
 export class Ground extends ComponentBaseEntity {
   name: string;
   eType: string = "Ground";
+  life: number = 100;
+  gs: GameState;
+  hits: Set<string> = new Set();
   constructor(gs: GameState, pos: IVec, name: string) {
     const { stage } = gs;
     super(stage, []);
+    this.gs = gs;
     const position = new StaticPositionComponent(pos);
 
     const renderer = new ImgRenderComponent(gs.images["static"].groundBlock);
@@ -30,6 +34,18 @@ export class Ground extends ComponentBaseEntity {
     this.addComponent(renderer);
     this.addComponent(box);
     this.name = name;
+  }
+  takeDamage(dmg: number, id: string) {
+    if (this.hits.has(id)) return;
+    this.hits.add(id);
+
+    this.life -= dmg;
+    this.replaceComponent(new ImgRenderComponent(this.gs.images["static"].dmgGroundBlock));
+    this.getComponent<ImgRenderComponent>("render").onInit(this);
+    // this.replaceComponent(new ImgRenderComponent(this.gs.images["static"].groundBlock));
+    if (this.life <= 0) {
+      this.gs.scene.removeEntity(this);
+    }
   }
 }
 class LivesCountComponent extends HTMLComponent {
@@ -92,6 +108,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
 
   const sections = [
     "30.",
+    "1|",
     "3_",
     "15.,1b",
     "10.",

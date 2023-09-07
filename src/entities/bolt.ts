@@ -3,6 +3,7 @@ import { IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
 import { Expire } from "../lib/utils";
+import { Ground } from "../scenes/mainScene";
 import { Enemy } from "./enemy";
 import { LittleDemon } from "./littleDemon";
 import { Player } from "./player";
@@ -11,6 +12,7 @@ export type MagicBoltData = {
   dmg?: number;
   exp?: number;
   en?: boolean;
+  player?: boolean;
 };
 const boltSprite: (images: any) => Sprite = images => {
   const s = images["shaman"];
@@ -47,12 +49,12 @@ export class MagicBolt extends ComponentBaseEntity {
       if (b.ID === this.c || this.c === (b as MagicBolt)?.c) return;
 
       if (b.eType === "Ground") {
+        if (this.data?.player) (b as Ground).takeDamage(!this.data?.en ? 50 : 100, this.ID);
         // gs.scene.removeEntity(b);
       } else if (b.eType === "Enemy") {
-        (b as Enemy).takeDamage(this.data.dmg || 10);
+        (b as Enemy).takeDamage(this.data.dmg || 10, this.ID);
       } else if (b.eType === "LittleDemon") {
-        (b as LittleDemon).takeDamage(this.data.dmg || 10);
-
+        (b as LittleDemon).takeDamage(this.data.dmg || 10, this.ID);
         // gs.scene.removeEntity(b);
       } else if (b.eType === "Player") {
         if (this.c !== b.ID) {

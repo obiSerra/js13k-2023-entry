@@ -133,7 +133,7 @@ export class Player extends ComponentBaseEntity {
     const renderer = new SpriteRenderComponent(sprite, "idle");
 
     const downListeners = {
-      ArrowL: () => {
+      ArrowLeft: () => {
         this.status = "walk-left";
       },
       ArrowRight: () => {
@@ -154,7 +154,7 @@ export class Player extends ComponentBaseEntity {
       },
     };
     const upListeners = {
-      ArrowL: () => {
+      ArrowLeft: () => {
         this.status = "idle";
       },
       ArrowRight: () => {
@@ -328,7 +328,8 @@ export class Player extends ComponentBaseEntity {
     const d = pos.direction * -400;
 
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, { en: this.lives <= 2 });
+    const en = this.lives <= 2;
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, { en , player: true, dmg: en ? 50 : 10 });
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(this.chargeUsage);
   }
