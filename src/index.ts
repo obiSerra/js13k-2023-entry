@@ -104,10 +104,9 @@ You completed the journey and saved the Great Khan.
 const lostLife = (gs: GameState) => {
   const lives = gs.session.lives;
   let msg = "";
-
   if (lives > 1)
     msg = `The spirits will grant you another chance, gifting you with <span class="hl-1"> increased Magic Power<span>.`;
-  else if (lives === 1) msg = `The spirits may grant you one last chance.`;
+  else if (lives === 1) msg = `The spirits may grant you one last chance, gifting you with <span class="hl-1"> double jump<span>.`;
 
   return `<div>
   <div class="tip_container fd">
@@ -257,8 +256,8 @@ const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string) =>
       win = true;
       break;
     }
-    displayMsg(gs, lostLife);
     gs.session.lives--;
+    displayMsg(gs, lostLife);
   }
   displayMsg(gs, win ? winGame : endGame);
 })();

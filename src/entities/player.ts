@@ -126,6 +126,8 @@ export class Player extends ComponentBaseEntity {
   eType: string = "Player";
   lives: number = 3;
   onEnd: () => void;
+  jumps: number = 0;
+  maxJumps: number = 0;
   constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
@@ -175,6 +177,9 @@ export class Player extends ComponentBaseEntity {
     if (lives <= 2) {
       this.chargeUsage = 75;
     }
+    if (lives === 1) {
+      this.maxJumps = 2;
+    }
 
     const control = new KeyboardControlComponent(downListeners, upListeners);
     const lifeBar = new LifeBarComponent("#life");
@@ -213,6 +218,7 @@ export class Player extends ComponentBaseEntity {
     if (pos.collisionSensors[2]?.d === 0) {
       this.onTheGround = true;
       this.jumpCharge.recharge(delta);
+      this.jumps = this.maxJumps;
     } else {
       this.onTheGround = false;
     }
@@ -284,7 +290,8 @@ export class Player extends ComponentBaseEntity {
   jump() {
     // this.status = "jump";
     const pos = this.getComponent<PositionComponent>("position");
-    if (this.jumpCharge.isFull && this.onTheGround) {
+    if (this.jumpCharge.isFull && (this.onTheGround || this.jumps > 0)) {
+      this.jumps--;
       pos.accelerate([0, this.jumpSpeed]);
       this.jumpCharge.useAll();
     }

@@ -114,7 +114,6 @@ export class LittleDemon extends ComponentBaseEntity {
   takeDamage(dmg: number, id: string) {
     if (this.hits.has(id)) return;
     this.hits.add(id);
-    console.log("Hit enemy", dmg);
     const v = this.getComponent<PositionComponent>("position").v;
     this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -50]);
     const rend = this.getComponent<SpriteRenderComponent>("render");
