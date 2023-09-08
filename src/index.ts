@@ -7,6 +7,15 @@ import { menuScene } from "./scenes/menuScene";
 import { mainScene } from "./scenes/mainScene";
 import { getProgress } from "./lib/utils";
 
+const commands = (gs: GameState) => `<table>
+<tr><td>Magic Energy</td><td><img style="border-left:4px solid #187194; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
+<tr><td>Jump</td><td>↑</td></tr>
+<tr><td>Move</td><td>← →</td></tr>
+<tr><td>Roll</td><td>↓</td></tr>
+<tr><td>Magic Bolt</td><td>Shift</td></tr>
+<tr><td>Pause</td><td>Esc</td></tr>
+</table>`;
+
 class PauseEntity extends ComponentBaseEntity {
   gs: GameState;
   constructor(gs: GameState) {
@@ -63,18 +72,10 @@ the Great Khan lies in front of you, mortally would by an enemy arrow.
 <p>
 Only you, his shaman, can save him, rescuing his soul from the land of the spirits.
 </p>
-<p>
+
 </div>
 <div class="col_2">
-
-<table>
-<tr><td>Magic Energy</td><td><img style="border-left:4px solid #187194; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
-<tr><td>Jump</td><td>↑</td></tr>
-<tr><td>Move</td><td>← →</td></tr>
-<tr><td>Roll</td><td>↓</td></tr>
-<tr><td>Magic Bolt</td><td>Shift</td></tr>
-</table>
-</p>
+${commands(gs)}
 </div>
 </div>
 <div class="tip_container">
@@ -106,7 +107,8 @@ const lostLife = (gs: GameState) => {
   let msg = "";
   if (lives > 1)
     msg = `The spirits will grant you another chance, gifting you with <span class="hl-1"> increased Magic Power<span>.`;
-  else if (lives === 1) msg = `The spirits may grant you one last chance, gifting you with <span class="hl-1"> double jump<span>.`;
+  else if (lives === 1)
+    msg = `The spirits may grant you one last chance, gifting you with <span class="hl-1"> supernatural jump<span>.`;
 
   return `<div>
   <div class="tip_container fd">
@@ -208,11 +210,11 @@ class Background extends ComponentBaseEntity {
   }
 }
 
-const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string) =>
+const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string, onSkip = () => {}) =>
   new Promise(resolve => {
     const tutorial = new TutorialEntity(gs, () => {
       resolve(null);
-      // gs.removeEntity(tutorial);
+      onSkip();
     });
 
     tutorial.setContent(msgFnc(gs));
@@ -259,5 +261,5 @@ const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string) =>
     gs.session.lives--;
     displayMsg(gs, lostLife);
   }
-  displayMsg(gs, win ? winGame : endGame);
+  displayMsg(gs, win ? winGame : endGame, () => window.location.reload());
 })();

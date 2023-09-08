@@ -127,7 +127,7 @@ export class Player extends ComponentBaseEntity {
   lives: number = 3;
   onEnd: () => void;
   jumps: number = 0;
-  maxJumps: number = 0;
+  maxJumps: number = 1;
   constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
@@ -178,7 +178,7 @@ export class Player extends ComponentBaseEntity {
       this.chargeUsage = 75;
     }
     if (lives === 1) {
-      this.maxJumps = 2;
+      this.maxJumps = 3;
     }
 
     const control = new KeyboardControlComponent(downListeners, upListeners);
@@ -220,6 +220,7 @@ export class Player extends ComponentBaseEntity {
       this.jumpCharge.recharge(delta);
       this.jumps = this.maxJumps;
     } else {
+      if (this.jumps > 0) this.jumpCharge.recharge(delta);
       this.onTheGround = false;
     }
 
