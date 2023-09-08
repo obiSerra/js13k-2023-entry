@@ -325,7 +325,7 @@ export class Player extends ComponentBaseEntity {
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, {
       en,
       player: true,
-      dmg: en ? 50 : 10,
+      dmg: en ? 50 : 25,
     });
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(this.chargeUsage);

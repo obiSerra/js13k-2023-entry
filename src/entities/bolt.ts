@@ -9,7 +9,7 @@ import { LittleDemon } from "./littleDemon";
 import { Player } from "./player";
 
 export type MagicBoltData = {
-  dmg?: number;
+  dmg: number;
   exp?: number;
   en?: boolean;
   player?: boolean;
@@ -32,7 +32,7 @@ export class MagicBolt extends ComponentBaseEntity {
   expire: Expire;
   gs: GameState;
   data: MagicBoltData = { dmg: 10 };
-  constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string, data: MagicBoltData = {}) {
+  constructor(gs: GameState, pos: IVec, v: IVec, creatorID: string, data: MagicBoltData | {} = {}) {
     const { stage } = gs;
     super(stage, []);
     const position = new PositionComponent(pos, v, [400, 600]);
@@ -52,14 +52,14 @@ export class MagicBolt extends ComponentBaseEntity {
         if (this.data?.player) (b as Ground).takeDamage(!this.data?.en ? 50 : 100, this.ID);
         // gs.scene.removeEntity(b);
       } else if (b.eType === "Enemy") {
-        (b as Enemy).takeDamage(this.data.dmg || 10, this.ID);
+        (b as Enemy).takeDamage(this.data.dmg, this.ID);
       } else if (b.eType === "LittleDemon") {
-        (b as LittleDemon).takeDamage(this.data.dmg || 10, this.ID);
+        (b as LittleDemon).takeDamage(this.data.dmg, this.ID);
         // gs.scene.removeEntity(b);
       } else if (b.eType === "Player") {
         if (this.c !== b.ID) {
           this.c = b.ID;
-          (b as Player)?.takeDamage(this.data.dmg || 10);
+          (b as Player)?.takeDamage(this.data.dmg);
         }
       }
       this.onDestroy();

@@ -5,8 +5,11 @@ import { GameState } from "../lib/gameState";
 import { EnemyData } from "./enemy";
 import { Player } from "./player";
 
-export const demonSprite: (images: any) => Sprite = images => {
-  const d = images["demon"];
+export const demonSprite: (images: any, t: number) => Sprite = (images, t) => {
+  let d = images["demon"];
+  if (t === 1) d = images["demon2"];
+  if (t === 2) d = images["demon3"];
+
   return {
     idle: { frames: [d.dem_1, d.dem_2, d.dem_3], changeTime: 300 },
     dmg: { frames: [d.dmg_1, d.dem_1], changeTime: 50 },

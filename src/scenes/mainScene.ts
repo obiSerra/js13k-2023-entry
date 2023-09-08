@@ -123,6 +123,8 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
     "1|",
     "3_",
     "15.,1b",
+    "15.,1bb",
+    "15.,1bbb",
     "10.",
     "3_",
     "10.,2|",
@@ -172,10 +174,17 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
     }
     if (tile === "b" || tile === "bb" || tile === "bbb") {
       const data: any = {};
-      if (tile === "b") data.speed = 10;
-      else if (tile === "bb") data.speed = 50;
-      else data.speed = 100;
-      scene.addEntity(new LittleDemon(gs, demonSprite(gs.images), [i * 32, v - 64], data));
+      let t = 0;
+      if (tile === "b") {
+        data.speed = 10;
+      } else if (tile === "bb") {
+        data.speed = 50;
+        t = 1;
+      } else {
+        data.speed = 100;
+        t = 2;
+      }
+      scene.addEntity(new LittleDemon(gs, demonSprite(gs.images, t), [i * 32, v - 64], data));
     }
     if (tile === "a" || tile === "aa" || tile === "aaa") {
       const data: EnemyData = {};

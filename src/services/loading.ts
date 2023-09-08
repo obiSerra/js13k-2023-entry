@@ -1,4 +1,4 @@
-import { rawImgs } from "../assets/pxImages";
+import { dmn1, dmn2, rawImgs, white } from "../assets/pxImages";
 import { ImagePxsRawMap, RenderFn, ImgFnMap } from "../lib/contracts";
 import { colorizeImages } from "../lib/rendering";
 
@@ -7,7 +7,7 @@ const damagedColors = {
     "#642209",
     "#e31937",
     "#000000",
-    "#f6f4f1",
+    white,
     "#006f46",
     "#ffe417",
     "#ffffff",
@@ -21,13 +21,23 @@ const damagedColors = {
   ],
 };
 
-const dmgDemonCol = { red: ["#000000", "#f6f4f1"] };
+const dmgDemonCol = { red: [white] };
 
 const boltColor = { red: ["#187194"], pink: ["#aad1e7"], purple: ["#3098c1"] };
 
 const damagedDemon = colorizeImages(dmgDemonCol, rawImgs);
 const enhancedBolt = colorizeImages(boltColor, rawImgs);
 const damagedShaman = colorizeImages(damagedColors, rawImgs);
+
+const a = {};
+a[dmn1] = [white];
+const b = {};
+b[dmn2] = [white];
+const enhancedDemon = colorizeImages(a, rawImgs);
+const enhancedDemonDmg = colorizeImages({ red: [dmn1] }, enhancedDemon);
+
+const enhancedDemon2 = colorizeImages(b, rawImgs);
+const enhancedDemonDmg2 = colorizeImages({ red: [dmn2] }, enhancedDemon2);
 
 function rotate90Clockwise(a: number[][]) {
   const N = a.length;
@@ -85,7 +95,17 @@ export const staticImages: ImgFnMap = {
   dmgGroundBlock: { d: [32, 32], f: groundBlock("#3e250f") },
 };
 export const pxImages: [string, number, ImagePxsRawMap][] = [
-  ["demon", 2, { ...rawImgs, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
+  ["demon", 1.5, { ...rawImgs, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
+  [
+    "demon2",
+    1.5,
+    { ...enhancedDemon, dmg_1: enhancedDemonDmg["dem_1"], colors: enhancedDemonDmg["colors"] as string[] },
+  ],
+  [
+    "demon3",
+    1.5,
+    { ...enhancedDemon2, dmg_1: enhancedDemonDmg2["dem_1"], colors: enhancedDemonDmg2["colors"] as string[] },
+  ],
   [
     "shaman",
     1.5,
@@ -105,5 +125,5 @@ export const pxImages: [string, number, ImagePxsRawMap][] = [
       ...enhancedBolt,
     },
   ],
-  ['life', 1, { ...rawImgs, colors: rawImgs['colors'] as string[] }],
+  ["life", 1, { ...rawImgs, colors: rawImgs["colors"] as string[] }],
 ];
