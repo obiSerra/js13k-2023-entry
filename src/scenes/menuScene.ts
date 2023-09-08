@@ -15,9 +15,12 @@ class MainMenu extends ComponentBaseEntity {
   }
 
   init() {
-    const c = [];
-    c.push({ class: "menu-item", text: "Story Mode", id: "new-game" });
-    c.push({ class: "menu-item", text: "Quick Game", id: "quick-game" });
+    const c = [
+      { class: "menu-item", text: "Story Mode", id: "new-game" },
+      { class: "menu-item", text: "Quick Game", id: "quick-game" },
+      { class: "menu-item", text: "Infinite Mode", id: "infinite-game" },
+    ];
+
     this.getComponent<MenuComponent>("menu").el.querySelector("ul").innerHTML = c
       .map(c => `<li><button class="${c.class}" id="${c.id}">${c.text}</button></li>`)
       .join("");
@@ -33,17 +36,16 @@ class MainMenu extends ComponentBaseEntity {
 export const menuScene = () => {
   return new Scene(
     async (gs: GameState, scene): Promise<string> =>
-      new Promise((resolve) => {
+      new Promise(resolve => {
         const menu = new MainMenu(gs);
+        const els = ["new-game", "quick-game", "infinite-game"];
+        els.forEach(e => {
+          menu.btnClick(`#${e}`, () => {
+            menu.destroy();
+            resolve(e);
+          });
+        });
 
-        menu.btnClick("#new-game", () => {
-          menu.destroy();
-          resolve("new-game");
-        });
-        menu.btnClick("#quick-game", () => {
-          menu.destroy();
-          resolve("quick-game");
-        });
         scene.addEntity(menu);
       })
   );

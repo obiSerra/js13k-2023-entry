@@ -245,7 +245,7 @@ const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string, onSk
   let win = false;
 
   while (gs.session.lives > 0) {
-    gs.scene = mainScene();
+    gs.scene = mainScene(clicked === "infinite-game");
     setTimeout(async () => {
       if (showTutorial) {
         await displayMsg(gs, storyContent);

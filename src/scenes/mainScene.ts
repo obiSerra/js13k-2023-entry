@@ -103,7 +103,7 @@ class Map {
     return this._parsed[n];
   }
 }
-const generateMap = (gs: GameState, scene: Scene) => {
+const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
   // Generate map
 
   const sections = [
@@ -129,7 +129,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
     "10.,3|,20.,1aaa",
   ];
 
-  const map = new Map(sections.join(","));
+  const map = !mp ? new Map(sections.join(",")) : new Map(mp.raw + "," + sections.join(","));
   let cnt = 0;
   let v = Math.floor(gs.stage.canvas.height / 2);
   let enemies = 0;
@@ -182,7 +182,7 @@ const generateMap = (gs: GameState, scene: Scene) => {
   return map;
 };
 
-export const mainScene = () => {
+export const mainScene = (infinite: boolean = false) => {
   return new Scene(
     async (gs: GameState, scene): Promise<{ gs: GameState; scene: Scene; win: boolean }> =>
       new Promise(resolve => {
@@ -196,7 +196,7 @@ export const mainScene = () => {
 
         // scene.addEntity(new LifeBar(gs.stage));
 
-        const map = generateMap(gs, scene);
+        let map = generateMap(gs, scene);
 
         gl.onUpdate(delta => {
           gs.getEntities()
@@ -210,9 +210,16 @@ export const mainScene = () => {
           const cy = gs.stage.canvas.height / 2 - y;
 
           const threshold = 4;
-          if (Math.round(x / 32) >= map.length - threshold) {
-            resolve({ gs, scene, win: true });
+          if (!infinite) {
+            if (Math.round(x / 32) >= map.length - threshold) {
+              resolve({ gs, scene, win: true });
+            }
+          } else {
+            if (Math.round(x / 32) >= map.length - 100) {
+              map = generateMap(gs, scene, map);
+            }
           }
+
           const inView = scene.getEntities().filter(e => isInView(e, [cx, cy], gs.stage.canvas));
 
           inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta, gs));
