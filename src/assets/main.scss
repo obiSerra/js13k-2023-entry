@@ -55,6 +55,7 @@ canvas {
   width: 100px;
   height: 20px;
   display: block;
+  border: 1px solid $black;
 
   .bar {
     display: inline-block;

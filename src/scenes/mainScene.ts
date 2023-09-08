@@ -1,6 +1,6 @@
-import { Enemy, EnemyData } from "../entities/enemy";
+import { Enemy, EnemyData, enemySprite } from "../entities/enemy";
 import { LittleDemon, demonSprite } from "../entities/littleDemon";
-import { Player, enemySprite, playerSprite } from "../entities/player";
+import { Player, playerSprite } from "../entities/player";
 import { resolveCollisions } from "../lib/collisions";
 import {
   BoxColliderComponent,
@@ -122,9 +122,6 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
     "30.",
     "1|",
     "3_",
-    "15.,1b",
-    "15.,1bb",
-    "15.,1bbb",
     "10.",
     "3_",
     "10.,2|",
@@ -188,10 +185,16 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
     }
     if (tile === "a" || tile === "aa" || tile === "aaa") {
       const data: EnemyData = {};
+      let t = 0;
       if (tile === "a") data.boltCost = 800;
-      else if (tile === "aa") data.boltCost = 550;
-      else data.boltCost = 300;
-      scene.addEntity(new Enemy(gs, enemySprite(gs.images), [i * 32, v - 64], data));
+      else if (tile === "aa") {
+        data.boltCost = 550;
+        t = 1;
+      } else {
+        data.boltCost = 300;
+        t = 2;
+      }
+      scene.addEntity(new Enemy(gs, enemySprite(gs.images, t), [i * 32, v - 64], data));
       enemies++;
     }
 

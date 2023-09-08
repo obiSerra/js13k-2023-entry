@@ -15,7 +15,7 @@ const damagedColors = {
     "#3098c1",
     "#187194",
     "#aad1e7",
-    "#974ec3",
+    dmn1,
     "#606060",
     "#313866",
   ],
@@ -28,6 +28,16 @@ const boltColor = { red: ["#187194"], pink: ["#aad1e7"], purple: ["#3098c1"] };
 const damagedDemon = colorizeImages(dmgDemonCol, rawImgs);
 const enhancedBolt = colorizeImages(boltColor, rawImgs);
 const damagedShaman = colorizeImages(damagedColors, rawImgs);
+
+let ep = {};
+ep[white] = [dmn1];
+const enhancedEnemy = colorizeImages(ep, rawImgs);
+const enhancedEnemyDmg = colorizeImages(damagedColors, enhancedEnemy);
+
+ep = {};
+ep[dmn2] = [dmn1];
+const enhancedEnemy2 = colorizeImages(ep, rawImgs);
+const enhancedEnemyDmg2 = colorizeImages(damagedColors, enhancedEnemy2);
 
 const a = {};
 a[dmn1] = [white];
@@ -95,6 +105,9 @@ export const staticImages: ImgFnMap = {
   dmgGroundBlock: { d: [32, 32], f: groundBlock("#3e250f") },
 };
 export const pxImages: [string, number, ImagePxsRawMap][] = [
+  ["enemy", 1.5, { ...enhancedEnemy, dmg_1: enhancedEnemyDmg["en_idle_1"], colors: enhancedEnemyDmg["colors"] as string[] }],
+  ["enemy2", 1.5, { ...rawImgs, dmg_1: damagedShaman["en_idle_1"], colors: damagedShaman["colors"] as string[] }],
+  ["enemy3", 1.5, { ...enhancedEnemy2, dmg_1: enhancedEnemyDmg2["en_idle_1"], colors: enhancedEnemyDmg2["colors"] as string[] }],
   ["demon", 1.5, { ...rawImgs, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
   [
     "demon2",

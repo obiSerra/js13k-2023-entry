@@ -7,6 +7,21 @@ import { Rechargeable } from "../services/rechargeable";
 import { MagicBolt } from "./bolt";
 import { Player } from "./player";
 
+export const enemySprite: (images: any, t: number) => Sprite = (images, t) => {
+  // const s = images["shaman"];
+  let e = images["enemy"];
+  if (t === 1) e = images["enemy2"];
+  if (t === 2) e = images["enemy3"];
+  
+
+  return {
+    idle: { frames: [e.en_idle_1, e.en_idle_2], changeTime: 500 },
+    idleL: { frames: [e.en_idle_1_left, e.en_idle_2_left], changeTime: 500 },
+    dmg: { frames: [e.dmg_1, e.en_idle_1], changeTime: 50 },
+    dmgL: { frames: [e.dmg_1_left, e.en_idle_1_left], changeTime: 50 },
+  };
+};
+
 const enemyFireThrottle = new Throttle(100);
 export type EnemyData = {
   boltCost?: number;

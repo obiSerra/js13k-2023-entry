@@ -398,7 +398,7 @@ export const rawImgs: ImagePxsRawMap = {
     "#3098c1",
     "#187194",
     "#aad1e7",
-    "#974ec3",
+    dmn1,
     "#606060",
     "#313866",
   ],

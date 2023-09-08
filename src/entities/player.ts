@@ -30,16 +30,6 @@ export const playerSprite: (images: any) => Sprite = images => {
   };
 };
 
-export const enemySprite: (images: any) => Sprite = images => {
-  const s = images["shaman"];
-  return {
-    idle: { frames: [s.en_idle_1, s.en_idle_2], changeTime: 500 },
-    idleL: { frames: [s.en_idle_1_left, s.en_idle_2_left], changeTime: 500 },
-    dmg: { frames: [s.dmg_1, s.en_idle_1], changeTime: 50 },
-    dmgL: { frames: [s.dmg_1_left, s.en_idle_1_left], changeTime: 50 },
-  };
-};
-
 class LifeBarComponent extends HTMLComponent {
   onInit(e: ComponentBaseEntity): void {
     super.onInit(e);
