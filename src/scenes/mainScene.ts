@@ -49,12 +49,24 @@ export class Ground extends ComponentBaseEntity {
   }
 }
 class LivesCountComponent extends HTMLComponent {
+  img: HTMLImageElement;
+  gs: GameState;
+  constructor(sel: string, gs: GameState) {
+    super(sel);
+    this.img = gs.images["life"].life;
+    this.gs = gs;
+  }
   onInit(e: ComponentBaseEntity): void {
     super.onInit(e);
+    this.el.innerHTML = "";
+    for (let i = 0; i < this.gs.session.lives; i++) {
+      this.el.appendChild(this.img.cloneNode(true));
+    }
+
     this.show();
   }
   onUpdate(e: ComponentBaseEntity, delta: number, gameState?: GameState): void {
-    this.el.innerHTML = `<span>${gameState?.session?.lives || ""}</span>`;
+    // this.el.innerHTML = `<span>${gameState?.session?.lives || ""}</span>`;
   }
 }
 
@@ -63,7 +75,7 @@ class Lives extends ComponentBaseEntity {
     const { stage } = gs;
     super(stage, []);
 
-    const html = new LivesCountComponent("#lives");
+    const html = new LivesCountComponent("#lives", gs);
 
     this.addComponent(html);
   }

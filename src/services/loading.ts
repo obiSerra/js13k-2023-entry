@@ -1,4 +1,4 @@
-import { littleDemonPx, shaman } from "../assets/pxImages";
+import { rawImgs } from "../assets/pxImages";
 import { ImagePxsRawMap, RenderFn, ImgFnMap } from "../lib/contracts";
 import { colorizeImages } from "../lib/rendering";
 
@@ -25,9 +25,9 @@ const dmgDemonCol = { red: ["#000000", "#f6f4f1"] };
 
 const boltColor = { red: ["#187194"], pink: ["#aad1e7"], purple: ["#3098c1"] };
 
-const damagedDemon = colorizeImages(dmgDemonCol, littleDemonPx);
-const enhancedBolt = colorizeImages(boltColor, shaman);
-const damagedShaman = colorizeImages(damagedColors, shaman);
+const damagedDemon = colorizeImages(dmgDemonCol, rawImgs);
+const enhancedBolt = colorizeImages(boltColor, rawImgs);
+const damagedShaman = colorizeImages(damagedColors, rawImgs);
 
 function rotate90Clockwise(a: number[][]) {
   const N = a.length;
@@ -85,16 +85,16 @@ export const staticImages: ImgFnMap = {
   dmgGroundBlock: { d: [32, 32], f: groundBlock("#3e250f") },
 };
 export const pxImages: [string, number, ImagePxsRawMap][] = [
-  ["demon", 2, { ...littleDemonPx, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
+  ["demon", 2, { ...rawImgs, dmg_1: damagedDemon["dem_1"], colors: damagedDemon["colors"] as string[] }],
   [
     "shaman",
     1.5,
     {
-      ...shaman,
+      ...rawImgs,
       dmg_1: damagedShaman["idle_1"],
-      roll_2: rollImage(shaman["roll_1"], 1),
-      roll_3: rollImage(shaman["roll_1"], 2),
-      roll_4: rollImage(shaman["roll_1"], 3),
+      roll_2: rollImage(rawImgs["roll_1"], 1),
+      roll_3: rollImage(rawImgs["roll_1"], 2),
+      roll_4: rollImage(rawImgs["roll_1"], 3),
       colors: damagedShaman["colors"] as string[],
     },
   ],
@@ -105,4 +105,5 @@ export const pxImages: [string, number, ImagePxsRawMap][] = [
       ...enhancedBolt,
     },
   ],
+  ['life', 1, { ...rawImgs, colors: rawImgs['colors'] as string[] }],
 ];

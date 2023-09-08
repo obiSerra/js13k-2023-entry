@@ -12,7 +12,7 @@ import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
 import { genMusicSheet } from "../lib/soundComponent";
 import { Stage } from "../lib/stage";
-import { Throttle, getProgress } from "../lib/utils";
+import { Throttle } from "../lib/utils";
 import { Rechargeable } from "../services/rechargeable";
 import { MagicBolt } from "./bolt";
 
@@ -33,10 +33,10 @@ export const playerSprite: (images: any) => Sprite = images => {
 export const enemySprite: (images: any) => Sprite = images => {
   const s = images["shaman"];
   return {
-    idle: { frames: [s.enemy_idle_1, s.enemy_idle_2], changeTime: 500 },
-    idleL: { frames: [s.enemy_idle_1_left, s.enemy_idle_2_left], changeTime: 500 },
-    dmg: { frames: [s.dmg_1, s.enemy_idle_1], changeTime: 50 },
-    dmgL: { frames: [s.dmg_1_left, s.enemy_idle_1_left], changeTime: 50 },
+    idle: { frames: [s.en_idle_1, s.en_idle_2], changeTime: 500 },
+    idleL: { frames: [s.en_idle_1_left, s.en_idle_2_left], changeTime: 500 },
+    dmg: { frames: [s.dmg_1, s.en_idle_1], changeTime: 50 },
+    dmgL: { frames: [s.dmg_1_left, s.en_idle_1_left], changeTime: 50 },
   };
 };
 
@@ -53,19 +53,6 @@ class LifeBarComponent extends HTMLComponent {
     for (let i = 0; i < bars; i++) {
       this.el.innerHTML += `<div class="bar"></div>`;
     }
-  }
-}
-
-class Progression extends HTMLComponent {
-  onInit(e: ComponentBaseEntity): void {
-    super.onInit(e);
-    this.show();
-  }
-  onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
-    const x = gs.session.pos[0];
-    const progress = getProgress(x);
-    this.el.innerHTML = `${progress}`;
-    // console.log(gs.session);
   }
 }
 
@@ -183,7 +170,6 @@ export class Player extends ComponentBaseEntity {
 
     const control = new KeyboardControlComponent(downListeners, upListeners);
     const lifeBar = new LifeBarComponent("#life");
-    const progression = new Progression("#progression");
 
     const sound = new SoundComponent(["triangle", "sawtooth", "square"]);
     sound.volume = 0.1;
@@ -200,7 +186,6 @@ export class Player extends ComponentBaseEntity {
     this.addComponent(box);
     this.addComponent(gravity);
     this.addComponent(lifeBar);
-    this.addComponent(progression);
     this.addComponent(new ChargeRender(stage, lives <= 2));
     this.addComponent(sound);
   }
@@ -337,7 +322,11 @@ export class Player extends ComponentBaseEntity {
 
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const en = this.lives <= 2;
-    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, { en , player: true, dmg: en ? 50 : 10 });
+    const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.ID, {
+      en,
+      player: true,
+      dmg: en ? 50 : 10,
+    });
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(this.chargeUsage);
   }
@@ -361,7 +350,7 @@ export class Player extends ComponentBaseEntity {
     }
   }
 
-  render(t: number, ca?: IVec): void {
-    super.render(t, ca);
-  }
+  // render(t: number, ca?: IVec): void {
+  //   super.render(t, ca);
+  // }
 }

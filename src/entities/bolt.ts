@@ -19,10 +19,10 @@ const boltSprite: (images: any) => Sprite = images => {
   const b = images["bolt"];
   return {
     bolt: { frames: [s.bolt_1, s.bolt_2], changeTime: 50 },
-    boltExplode: { frames: [s.bolt_explode_1, s.bolt_explode_2, s.bolt_explode_3], changeTime: 50 },
+    boltExplode: { frames: [s.bolt_exp_1, s.bolt_exp_2, s.bolt_exp_3], changeTime: 50 },
     boltL: { frames: [s.bolt_1_left, s.bolt_2_left], changeTime: 50 },
     enhBolt: { frames: [b.bolt_1, b.bolt_2], changeTime: 50 },
-    enhBoltExplode: { frames: [b.bolt_explode_1, b.bolt_explode_2, b.bolt_explode_3], changeTime: 50 },
+    enhBoltExplode: { frames: [b.bolt_exp_1, b.bolt_exp_2, b.bolt_exp_3], changeTime: 50 },
     enhBoltL: { frames: [b.bolt_1_left, b.bolt_2_left], changeTime: 50 },
   };
 };
