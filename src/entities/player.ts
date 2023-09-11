@@ -94,7 +94,6 @@ export class Player extends ComponentBaseEntity {
   jumpSpeed: number = -300;
   onTheGround: boolean = false;
   fireCharge: Rechargeable = new Rechargeable(1000, 500);
-  jumpCharge: Rechargeable = new Rechargeable(10, 10);
   rollCharge: Rechargeable = new Rechargeable(150, 150);
   rolling: number = 0;
   firing: boolean = false;
@@ -105,6 +104,7 @@ export class Player extends ComponentBaseEntity {
   onEnd: () => void;
   jumps: number = 0;
   maxJumps: number = 1;
+  jumping: boolean = false;
   constructor(gs: GameState, sprite: Sprite, pos: IVec, lives: number, onEnd: () => void) {
     const { stage } = gs;
     super(stage, []);
@@ -119,6 +119,8 @@ export class Player extends ComponentBaseEntity {
         this.status = "walk-right";
       },
       ArrowUp: () => {
+        if (this.jumping) return;
+        this.jumping = true;
         this.jump();
       },
       ArrowDown: () => {
@@ -139,12 +141,8 @@ export class Player extends ComponentBaseEntity {
       ArrowRight: () => {
         this.status = "idle";
       },
-      ArrowDown: () => {
-        // this._resetBox();
-        // this.status = "idle";
-      },
       ArrowUp: () => {
-        // this.status = "idle";
+        this.jumping = false;
       },
       Shift: () => {
         this.firing = false;
@@ -192,10 +190,8 @@ export class Player extends ComponentBaseEntity {
 
     if (pos.collisionSensors[2]?.d === 0) {
       this.onTheGround = true;
-      this.jumpCharge.recharge(delta);
       this.jumps = this.maxJumps;
     } else {
-      if (this.jumps > 0) this.jumpCharge.recharge(delta);
       this.onTheGround = false;
     }
 
@@ -266,10 +262,10 @@ export class Player extends ComponentBaseEntity {
   jump() {
     // this.status = "jump";
     const pos = this.getComponent<PositionComponent>("position");
-    if (this.jumpCharge.isFull && (this.onTheGround || this.jumps > 0)) {
+    if (this.jumps > 0) {
       this.jumps--;
+      pos.v = [pos.v[0], 0];
       pos.accelerate([0, this.jumpSpeed]);
-      this.jumpCharge.useAll();
     }
   }
   stand() {
