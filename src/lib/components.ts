@@ -9,14 +9,14 @@ export class StaticPositionComponent implements IComponent {
   p: IVec;
   direction: number;
   constructor(p: IVec, v: IVec = [0, 0]) {
-    this.type = "position";
+    this.type = "pos";
     this.p = p;
     this.direction = 1;
   }
 }
 
 export class PositionComponent implements IComponent {
-  type: "position";
+  type: "pos";
   p: IVec;
   v: IVec;
   a: IVec = [0, 0];
@@ -26,7 +26,7 @@ export class PositionComponent implements IComponent {
   collisionSensors: CollisionSensors = [null, null, null, null];
   direction: number;
   constructor(p: IVec, v: IVec = [0, 0], maxSpeed: IVec = [200, 200], direction = 1) {
-    this.type = "position";
+    this.type = "pos";
     this.p = p;
     this.lp = p;
     this.v = v;
@@ -42,7 +42,7 @@ export class PositionComponent implements IComponent {
     this.a[1] = dir[1] ? 0 : this.a[1];
   }
   onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
-    const { solid } = e.getComponent<BoxColliderComponent>("collider");
+    const { solid } = e.getComponent<BoxColliderComponent>("coll");
 
     const maxSpeed = this.maxSpeed;
     let {
@@ -95,7 +95,7 @@ export class PositionComponent implements IComponent {
 }
 
 export class BoxColliderComponent implements IComponent {
-  type: "collider";
+  type: "coll";
   box: IVec;
   boxPos: IVec;
   posModifiers: IVec = [0, 0];
@@ -107,7 +107,7 @@ export class BoxColliderComponent implements IComponent {
   solid: boolean = true;
 
   constructor(box: IVec, onCollide?: (e: ComponentBaseEntity, b: CollisionSensors) => void) {
-    this.type = "collider";
+    this.type = "coll";
     this.box = box;
     this.trigger = true;
     this.onCollideFn = onCollide;
@@ -115,11 +115,11 @@ export class BoxColliderComponent implements IComponent {
   }
   onInit(e: ComponentBaseEntity): void {
     this.onCollide = this.onCollideFn?.bind(e) || null;
-    this.boxPos = e.getComponent<PositionComponent>("position").p;
+    this.boxPos = e.getComponent<PositionComponent>("pos").p;
   }
 
   onUpdate(e: ComponentBaseEntity, delta: number, gs?: GameState): void {
-    const [x, y] = e.getComponent<PositionComponent>("position").p;
+    const [x, y] = e.getComponent<PositionComponent>("pos").p;
     this.boxPos = [x + this.posModifiers[0], y + this.posModifiers[1]];
   }
 
@@ -149,7 +149,7 @@ export class SpriteRenderComponent implements IComponent {
   renderPriority: number;
 
   constructor(sprite: Sprite, defaultAnimation: string, renderPriority: number = 0) {
-    this.type = "render";
+    this.type = "rnd";
     this.sprite = sprite;
     this.renderPriority = renderPriority;
     this.sAnim(defaultAnimation);
@@ -163,7 +163,7 @@ export class SpriteRenderComponent implements IComponent {
     this.cA = animationName;
   }
   onRender(e: ComponentBaseEntity, t: number, c: IVec): void {
-    const pos = e.getComponent<PositionComponent>("position").p;
+    const pos = e.getComponent<PositionComponent>("pos").p;
     if (!pos) throw new Error("PositionComponent not found");
     const [x, y] = pos;
 
@@ -199,7 +199,7 @@ export class ImgRenderComponent implements IComponent {
   pos: IVec;
 
   constructor(image: HTMLImageElement, renderPriority: number = 99) {
-    this.type = "render";
+    this.type = "rnd";
     this.image = image;
     this.renderPriority = renderPriority;
   }
@@ -208,7 +208,7 @@ export class ImgRenderComponent implements IComponent {
   }
 
   onRender(e: ComponentBaseEntity, delta: number, c: IVec): void {
-    const pos = e.getComponent<PositionComponent>("position").p;
+    const pos = e.getComponent<PositionComponent>("pos").p;
     this.stage.ctx.drawImage(this.image, pos[0] + c[0], pos[1] + c[1]);
   }
 }
@@ -219,18 +219,18 @@ export class GravityComponent implements IComponent {
   ev: number;
   active: true;
   constructor(gravity: number = 1, ev: number = null) {
-    this.type = "gravity";
+    this.type = "grv";
     this.gravity = gravity * 9.8;
     this.ev = !!ev ? ev : gravity * 100;
   }
   onUpdate(e: ComponentBaseEntity, delta: number): void {
-    const pos = e.getComponent<PositionComponent>("position");
+    const pos = e.getComponent<PositionComponent>("pos");
 
     pos.accelerate([0, this.gravity]);
     // const accV = Math.max(v[1] + mXs(this.gravity, delta), th  is.ev);
 
     // const accV = v[1] + pXs(this.gravity, delta);
-    // (e.getComponent<PositionComponent).v = [v[0], accV]>("position")
+    // (e.getComponent<PositionComponent).v = [v[0], accV]>("pos")
   }
 }
 
@@ -250,7 +250,7 @@ export class SoundComponent implements IComponent {
   volume: number = 0.5;
 
   constructor(channels: number | (string | null)[] = 3) {
-    this.type = "sound";
+    this.type = "snd";
     this.sound = new Sound(channels);
     this.channels = channels;
   }
@@ -355,7 +355,7 @@ export class KeyboardControlComponent implements IComponent {
   downListener: EvtListeners;
   upListener: EvtListeners;
   constructor(downEvtLst: EvtListeners = {}, upEvtLst: EvtListeners = {}) {
-    this.type = "control";
+    this.type = "ctl";
     this.downListener = downEvtLst;
     this.upListener = upEvtLst;
   }

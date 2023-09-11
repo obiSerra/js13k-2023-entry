@@ -53,8 +53,8 @@ export class Enemy extends ComponentBaseEntity {
   update(delta: number, gs: GameState): void {
     this.action(delta, gs);
     this.fireCharge.recharge(delta);
-    const pos = this.getComponent<PositionComponent>("position");
-    const rend = this.getComponent<SpriteRenderComponent>("render");
+    const pos = this.getComponent<PositionComponent>("pos");
+    const rend = this.getComponent<SpriteRenderComponent>("rnd");
 
     if (pos.direction === 1 && rend.cA !== "idleL") rend.sAnim("idleL");
     if (pos.direction === -1 && rend.cA !== "idle") rend.sAnim("idle");
@@ -65,14 +65,14 @@ export class Enemy extends ComponentBaseEntity {
   action(delta: number, gs: GameState) {
     const player = gs.scene.getEntities().find(e => e.eType === "Player") as Player;
     if (!player) return;
-    const [px, py] = player.getComponent<PositionComponent>("position").p;
-    const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
-    const pos = this.getComponent<PositionComponent>("position");
+    const [px, py] = player.getComponent<PositionComponent>("pos").p;
+    const [pw, ph] = player.getComponent<BoxColliderComponent>("coll").box;
+    const pos = this.getComponent<PositionComponent>("pos");
     const {
       p: [x, y],
       direction: d,
     } = pos;
-    const [w, h] = this.getComponent<BoxColliderComponent>("collider").box;
+    const [w, h] = this.getComponent<BoxColliderComponent>("coll").box;
 
     const [[cpx, cpy], [cx, cy]] = [
       [px + pw / 2, py + ph / 2],
@@ -104,7 +104,7 @@ export class Enemy extends ComponentBaseEntity {
   magicBolt() {
     const boltCost = this?.data?.boltCost || 550;
     if (this.fireCharge.current < boltCost) return;
-    const pos = this.getComponent<PositionComponent>("position");
+    const pos = this.getComponent<PositionComponent>("pos");
     const d = pos.direction * -400;
     const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.eType);
@@ -115,7 +115,7 @@ export class Enemy extends ComponentBaseEntity {
     if (this.hits.has(id)) return;
     this.hits.add(id);
 
-    const rend = this.getComponent<SpriteRenderComponent>("render");
+    const rend = this.getComponent<SpriteRenderComponent>("rnd");
     if (rend.cA !== "dmg") {
       rend.sAnim("dmg");
       setTimeout(() => rend.sAnim("idle"), 100);

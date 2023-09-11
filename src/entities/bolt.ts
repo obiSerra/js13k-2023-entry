@@ -95,7 +95,7 @@ export class MagicBolt extends ComponentBaseEntity {
   }
 
   onDestroy() {
-    const rend = this.getComponent<SpriteRenderComponent>("render");
+    const rend = this.getComponent<SpriteRenderComponent>("rnd");
 
     if (this.data?.en) {
       if (rend.cA !== "enhBoltExplode") rend.sAnim("enhBoltExplode");
@@ -104,8 +104,8 @@ export class MagicBolt extends ComponentBaseEntity {
     }
 
     // if (rend.cA !== "boltExplode") rend.sAnim("boltExplode");
-    this.getComponent<PositionComponent>("position").v = [0, 0];
-    this.getComponent<BoxColliderComponent>("collider").onCollide = null;
+    this.getComponent<PositionComponent>("pos").v = [0, 0];
+    this.getComponent<BoxColliderComponent>("coll").onCollide = null;
     setTimeout(() => {
       this.gs.scene.removeEntity(this);
     }, 150);

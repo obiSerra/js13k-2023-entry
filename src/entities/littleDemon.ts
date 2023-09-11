@@ -59,8 +59,8 @@ export class LittleDemon extends ComponentBaseEntity {
   update(delta: number, gs?: GameState): void {
     this.action(delta, gs);
 
-    // const pos = this.getComponent<PositionComponent>("position");
-    // const rend = this.getComponent<SpriteRenderComponent>("render");
+    // const pos = this.getComponent<PositionComponent>("pos"
+    // const rend = this.getComponent<SpriteRenderComponent>("rnd");
 
     // if (pos.direction === 1 && rend.cA !== "idleL") rend.sAnim("idleL");
     // if (pos.direction === -1 && rend.cA !== "idle") rend.sAnim("idle");
@@ -71,14 +71,14 @@ export class LittleDemon extends ComponentBaseEntity {
   action(delta: number, gs: GameState) {
     const player = gs.scene.getEntities().find(e => e.eType === "Player") as Player;
     if (!player) return;
-    const [px, py] = player.getComponent<PositionComponent>("position").p;
-    const [pw, ph] = player.getComponent<BoxColliderComponent>("collider").box;
-    const pos = this.getComponent<PositionComponent>("position");
+    const [px, py] = player.getComponent<PositionComponent>("pos").p;
+    const [pw, ph] = player.getComponent<BoxColliderComponent>("coll").box;
+    const pos = this.getComponent<PositionComponent>("pos");
     const {
       p: [x, y],
       direction: d,
     } = pos;
-    const [w, h] = this.getComponent<BoxColliderComponent>("collider").box;
+    const [w, h] = this.getComponent<BoxColliderComponent>("coll").box;
 
     const [[cpx, cpy], [cx, cy]] = [
       [px + pw / 2, py + ph / 2],
@@ -117,9 +117,9 @@ export class LittleDemon extends ComponentBaseEntity {
   takeDamage(dmg: number, id: string) {
     if (this.hits.has(id)) return;
     this.hits.add(id);
-    const v = this.getComponent<PositionComponent>("position").v;
-    this.getComponent<PositionComponent>("position").accelerate([v[0] * -10, -50]);
-    const rend = this.getComponent<SpriteRenderComponent>("render");
+    const v = this.getComponent<PositionComponent>("pos").v;
+    this.getComponent<PositionComponent>("pos").accelerate([v[0] * -10, -50]);
+    const rend = this.getComponent<SpriteRenderComponent>("rnd");
     if (rend.cA !== "dmg") {
       rend.sAnim("dmg");
       setTimeout(() => rend.sAnim("idle"), 100);

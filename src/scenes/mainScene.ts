@@ -40,7 +40,7 @@ export class Ground extends ComponentBaseEntity {
 
     this.life -= dmg;
     this.replaceComponent(new ImgRenderComponent(this.gs.images["static"].dmgGroundBlock));
-    this.getComponent<ImgRenderComponent>("render").onInit(this);
+    this.getComponent<ImgRenderComponent>("rnd").onInit(this);
     // this.replaceComponent(new ImgRenderComponent(this.gs.images["static"].groundBlock));
     if (this.life <= 0) {
       this.gs.scene.removeEntity(this);
@@ -226,7 +226,7 @@ export const mainScene = (infinite: boolean = false) => {
 
           if (gs.status !== "running") return;
 
-          const [x, y] = player.getComponent<PositionComponent>("position").p;
+          const [x, y] = player.getComponent<PositionComponent>("pos").p;
           const cx = gs.stage.canvas.width / 2 - x;
           const cy = gs.stage.canvas.height / 2 - y;
 
@@ -245,24 +245,24 @@ export const mainScene = (infinite: boolean = false) => {
 
           inView.filter(e => typeof e.update === "function").forEach(e => e.update(delta, gs));
 
-          resolveCollisions(inView.filter(e => !!e.components["collider"]));
+          resolveCollisions(inView.filter(e => !!e.components["coll"]));
         });
 
         gl.onRender(t => {
-          const [x, y] = player.getComponent<PositionComponent>("position").p;
+          const [x, y] = player.getComponent<PositionComponent>("pos").p;
           const cx = gs.stage.canvas.width / 2 - x;
           const cy = gs.stage.canvas.height / 2 - y;
 
           // scene.cameraPos = [cx, cy];
           let toRender = scene.getEntities().filter(e => {
-            if (!e.components["render"]) return false;
+            if (!e.components["rnd"]) return false;
             return isInView(e, [cx, cy], gs.stage.canvas);
           });
 
           toRender.sort(
             (a, b) =>
-              b.getComponent<IRenderComponent>("render").renderPriority -
-              a.getComponent<IRenderComponent>("render").renderPriority
+              b.getComponent<IRenderComponent>("rnd").renderPriority -
+              a.getComponent<IRenderComponent>("rnd").renderPriority
           );
 
           toRender.forEach(e => e.render(t, [cx, cy]));

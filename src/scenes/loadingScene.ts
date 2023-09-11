@@ -16,9 +16,6 @@ class LoadingBar extends ComponentBaseEntity {
 
   init() {
     super.init();
-    const html = this.getComponent<HTMLComponent>("html");
-    html.el.innerHTML = "Loading...";
-    html.show();
     this.loadPxImages(pxImages);
     this.loadImages(staticImages);
   }

@@ -15,10 +15,11 @@ class MainMenu extends ComponentBaseEntity {
   }
 
   init() {
+    const m = "menu-item"
     const c = [
-      { class: "menu-item", text: "Story Mode", id: "new-game" },
-      { class: "menu-item", text: "Quick Game", id: "quick-game" },
-      { class: "menu-item", text: "Infinite Mode", id: "infinite-game" },
+      { class: m, text: "Story Mode", id: "new-game" },
+      { class: m, text: "Quick Game", id: "quick-game" },
+      { class: m, text: "Infinite Mode", id: "infinite-game" },
     ];
 
     this.getComponent<MenuComponent>("menu").el.querySelector("ul").innerHTML = c
