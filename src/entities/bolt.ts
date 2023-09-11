@@ -51,7 +51,7 @@ export class MagicBolt extends ComponentBaseEntity {
       if (b.eType === "Ground") {
         if (this.data?.player) (b as Ground).takeDamage(!this.data?.en ? 50 : 100, this.ID);
         // gs.scene.removeEntity(b);
-      } else if (b.eType === "Enemy") {
+      } else if (b.eType === "Enemy" && this.c !== "Enemy") {
         (b as Enemy).takeDamage(this.data.dmg, this.ID);
       } else if (b.eType === "LittleDemon") {
         (b as LittleDemon).takeDamage(this.data.dmg, this.ID);

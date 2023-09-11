@@ -21,7 +21,7 @@ export class Ground extends ComponentBaseEntity {
   life: number = 100;
   gs: GameState;
   hits: Set<string> = new Set();
-  constructor(gs: GameState, pos: IVec, name: string) {
+  constructor(gs: GameState, pos: IVec) {
     const { stage } = gs;
     super(stage, []);
     this.gs = gs;
@@ -33,7 +33,6 @@ export class Ground extends ComponentBaseEntity {
     this.addComponent(position);
     this.addComponent(renderer);
     this.addComponent(box);
-    this.name = name;
   }
   takeDamage(dmg: number, id: string) {
     if (this.hits.has(id)) return;
@@ -117,31 +116,40 @@ class Map {
 }
 const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
   // Generate map
+  const step = ["4.", "1|", "10."];
+
+  const intro = ["30.", "2_", "1wwwww", ...step];
+  const d = ["10.", "1b"];
+  const demon = [...d, ...step];
+  const demon2 = [...d, ...d, ...d, ...step];
+  const e = ["10.", "1a"];
+  const enemy = [...e, ...step];
+  const enemy2 = [...e, ...e, ...e, ...step];
+  const jumps = ["5.", "3_", "10.", "5_", "10.", "10_", "5.", ...step];
+  const j = ["5.", "3_", "3.", "3_", "5."];
+  const jumps2 = [...j, "10_", "5.", ...j, "15_", "5.", ...step];
+  const fight = [
+    ...demon,
+    ...enemy,
+    ...jumps,
+    ...demon2,
+    ...enemy2,
+    ...jumps,
+    ...demon2.map(s => s.replace("1b", "2b")),
+    ...jumps2,
+    ...enemy.map(s => s.replace("1a", "1a,1.,1a")),
+    ...jumps2,
+  ];
 
   const sections = [
-    "30.",
-    "1|",
-    "3_",
-    "10.",
-    "3_",
-    "10.,2|",
-    "20.,1a",
-    "10.,2|",
-    "5.,3_,5.,5_",
-    "5.,3|",
-    "20.,2bb,5.",
-    "10.,1*,1-,1|,10.,1a",
-    "10.1*,1|,10.,1a",
-    "3.,2|,3.",
-    "10.,3_,5.,1a,1.,5_",
-    "3.,3|,3.",
-    "5.,3_,2.,3_,5.,1a,1.,5_",
-    "20.,3bbb,5.",
-    "10.,3|,20.,1aaa",
+    ...intro,
+    ...fight,
+    ...fight.map(s => s.replace(/a/g, "aa").replace(/b/g, "bb")),
+    ...fight.map(s => s.replace(/a/g, "aaa").replace(/b/g, "bbb")),
   ];
 
   const map = !mp ? new Map(sections.join(",")) : new Map(mp.raw + "," + sections.join(","));
-  let cnt = 0;
+
   let v = Math.floor(gs.stage.canvas.height / 2);
   let enemies = 0;
   // console.log("Map length", map.length);
@@ -149,27 +157,17 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
     const tile = map.tile(i);
 
     if (tile === "|") {
-      scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
-      cnt++;
+      scene.addEntity(new Ground(gs, [i * 32, v]));
       v -= 32;
     }
-    if (tile === "-") {
-      v -= 32;
-      scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
-      cnt++;
-      v -= 32;
-      scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
-      cnt++;
-      v += 64;
-    }
+
     if (tile === "*") {
       v -= 32;
-      scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
-      cnt++;
+      scene.addEntity(new Ground(gs, [i * 32, v]));
 
       v += 32;
     }
-    if (tile === "b" || tile === "bb" || tile === "bbb") {
+    if (tile.startsWith("b")) {
       const data: any = {};
       let t = 0;
       if (tile === "b") {
@@ -183,7 +181,7 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
       }
       scene.addEntity(new LittleDemon(gs, demonSprite(gs.images, t), [i * 32, v - 64], data));
     }
-    if (tile === "a" || tile === "aa" || tile === "aaa") {
+    if (tile.startsWith("a")) {
       const data: EnemyData = {};
       let t = 0;
       if (tile === "a") data.boltCost = 800;
@@ -199,8 +197,7 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null) => {
     }
 
     if (tile !== "_") {
-      scene.addEntity(new Ground(gs, [i * 32, v], cnt.toString()));
-      cnt++;
+      scene.addEntity(new Ground(gs, [i * 32, v]));
     }
   }
   return map;
