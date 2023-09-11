@@ -10,6 +10,7 @@ rm -rf dist/
 
 node removeModules.js
 
+# prettier src/index_concat.ts --write --config .prettierrc
 echo "Manually fix the file [enter to continue]?"
 read varname
 cp src/index.ts src/index.ts.bak
