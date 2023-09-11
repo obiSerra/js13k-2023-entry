@@ -16,6 +16,7 @@
     "html-inline-css-webpack-plugin": "^1.11.1",
     "html-webpack-plugin": "^5.5.3",
     "mini-css-extract-plugin": "^2.7.6",
+    "prettier": "3.0.3",
     "sass": "^1.63.6",
     "sass-loader": "^13.3.2",
     "scss-loader": "^0.0.1",
