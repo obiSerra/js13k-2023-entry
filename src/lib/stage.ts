@@ -10,6 +10,6 @@ export class Stage implements IStage {
     this.ctx = this.canvas.getContext("2d");
 
     this.canvas.width = 1200;
-    this.canvas.height = 600;
+    this.canvas.height = 800;
   }
 }
