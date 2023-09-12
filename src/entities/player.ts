@@ -5,13 +5,12 @@ import {
     HTMLComponent,
     KeyboardControlComponent,
     PositionComponent,
-    SoundComponent,
     SpriteRenderComponent
 } from "../lib/components";
 import { ComponentType, IComponent, IVec, Sprite } from "../lib/contracts";
 import { ComponentBaseEntity } from "../lib/entities";
 import { GameState } from "../lib/gameState";
-import { genMusicSheet } from "../lib/soundComponent";
+
 import { Stage } from "../lib/stage";
 import { Throttle } from "../lib/utils";
 import { Rechargeable } from "../services/rechargeable";
@@ -68,8 +67,7 @@ class ChargeRender implements IComponent {
         ctx.beginPath();
         let h = -30 * ratio;
         let w = 3;
-        let color = blu2
-        
+        let color = blu2;
 
         if (this.en) {
             h = -40 * ratio;
@@ -161,9 +159,6 @@ export class Player extends ComponentBaseEntity {
         const control = new KeyboardControlComponent(downListeners, upListeners);
         const lifeBar = new LifeBarComponent("#life");
 
-        const sound = new SoundComponent(["triangle", "sawtooth", "square"]);
-        sound.volume = 0.1;
-
         const box = new BoxColliderComponent([36, 48], (b: ComponentBaseEntity, c: any) => {});
         box.posModifiers = [8, 0];
         const gravity = new GravityComponent();
@@ -188,7 +183,6 @@ export class Player extends ComponentBaseEntity {
         this.addComponent(gravity);
         this.addComponent(lifeBar);
         this.addComponent(new ChargeRender(stage, lives <= 2));
-        this.addComponent(sound);
     }
 
     get invulnerable() {
@@ -342,11 +336,6 @@ export class Player extends ComponentBaseEntity {
         if (rend.cA !== "dmg") rend.sAnim("dmg");
         this.life -= damage;
         if (this.life <= 0) this.destroy();
-        else {
-            const music = genMusicSheet(100, [{ n: "G2", d: 2, c: 2 }]);
-
-            this.getComponent<SoundComponent>("snd").play(music);
-        }
     }
 
     // render(t: number, ca?: IVec): void {

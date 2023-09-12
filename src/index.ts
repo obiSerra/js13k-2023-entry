@@ -9,7 +9,7 @@ import { getProgress } from "./lib/utils";
 import { blu2 } from "./assets/pxImages";
 
 const commands = (gs: GameState) => `<table>
-<tr><td>Magic Energy</td><td><img style="border-left:4px solid ${blu2}; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
+<tr><td>Mana</td><td><img style="border-left:4px solid ${blu2}; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
 <tr><td>Jump</td><td>↑</td></tr>
 <tr><td>Move</td><td>← →</td></tr>
 <tr><td>Roll</td><td>↓</td></tr>
@@ -18,60 +18,57 @@ const commands = (gs: GameState) => `<table>
 </table>`;
 
 class PauseEntity extends ComponentBaseEntity {
-  gs: GameState;
-  constructor(gs: GameState) {
-    const { stage } = gs;
-    super(stage, []);
-    this.gs = gs;
-    const html = new MenuComponent("#main-menu");
+    gs: GameState;
+    constructor(gs: GameState) {
+        const { stage } = gs;
+        super(stage, []);
+        this.gs = gs;
+        const html = new MenuComponent("#main-menu");
 
-    this.addComponent(html);
-  }
+        this.addComponent(html);
+    }
 
-  init() {
-    const c = [];
-    c.push({ class: "menu-item", text: "continue", id: "continue" });
-    const comp = this.getComponent<MenuComponent>("menu");
-    comp.el.querySelector("ul").innerHTML = c
-      .map(c => `<li><button class="${c.class}" id="${c.id}">${c.text}</button></li>`)
-      .join("");
+    init() {
+        const c = [];
+        c.push({ class: "menu-item", text: "continue", id: "continue" });
+        const comp = this.getComponent<MenuComponent>("menu");
+        comp.el.querySelector("ul").innerHTML = c
+            .map(c => `<li><button class="${c.class}" id="${c.id}">${c.text}</button></li>`)
+            .join("");
 
-    document.addEventListener("keydown", e => {
-      if (e.key === "Escape") {
-        comp.show();
-        this.gs.status = "paused";
-        this.gs.stage.canvas.classList.add("paused");
-      }
-    });
+        document.addEventListener("keydown", e => {
+            if (e.key === "Escape") {
+                comp.show();
+                this.gs.status = "paused";
+                this.gs.stage.canvas.classList.add("paused");
+            }
+        });
 
-    comp.addListener("#continue", () => {
-      this.gs.stage.canvas.classList.remove("paused");
-      comp.hide();
-      this.gs.status = "running";
-    });
+        comp.addListener("#continue", () => {
+            this.gs.stage.canvas.classList.remove("paused");
+            comp.hide();
+            this.gs.status = "running";
+        });
 
-    super.init();
-    comp.hide();
-  }
+        super.init();
+        comp.hide();
+    }
 
-  btnClick(sel: string, cb: () => void) {
-    this.getComponent<MenuComponent>("menu").addListener(sel, cb);
-  }
+    btnClick(sel: string, cb: () => void) {
+        this.getComponent<MenuComponent>("menu").addListener(sel, cb);
+    }
 }
 
 const storyContent = (gs: GameState) => {
-  return `<div>
+    return `<div>
 <div class="tip_container">
 <div class="col_1">
-<p>
-In the 13th Century, <span class='hl-2'>Genghis Khan</span> created the largest contiguous empire in history.
-</p>
 <p>
 Year <span class='hl-1'>1215 CE</span>,
 the Great Khan lies in front of you, mortally would by an enemy arrow. 
 </p>
 <p>
-Only you, his shaman, can save him, rescuing his soul from the land of the spirits.
+Only you, his shaman, can save him from the land of the spirits.
 </p>
 
 </div>
@@ -87,7 +84,7 @@ ${commands(gs)}
 
 const endGame = gs => `<div>
 <p>
-You failed to save the Great Khan.
+You failed to save the Great Khan after ${getProgress(gs?.session?.pos[0])} steps.
 </p>
 <p>
 
@@ -104,14 +101,14 @@ You completed the journey and saved the Great Khan.
 </div>`;
 
 const lostLife = (gs: GameState) => {
-  const lives = gs.session.lives;
-  let msg = "";
-  if (lives > 1)
-    msg = `The spirits will grant you another chance, gifting you with <span class="hl-1"> increased Magic Power<span>.`;
-  else if (lives === 1)
-    msg = `The spirits may grant you one last chance, gifting you with <span class="hl-1"> supernatural jump<span>.`;
+    const lives = gs.session.lives;
+    let msg = "";
+    if (lives > 1)
+        msg = `The spirits will grant you another chance, gifting you with <span class="hl-1"> increased Magic Power<span>.`;
+    else if (lives === 1)
+        msg = `The spirits may grant you one last chance, gifting you with <span class="hl-1"> supernatural jump<span>.`;
 
-  return `<div>
+    return `<div>
   <div class="tip_container fd">
   <p>
   Your journey ended after <span class="hl-1">${getProgress(gs?.session?.pos[0])} steps</span>.
@@ -127,141 +124,110 @@ const lostLife = (gs: GameState) => {
 };
 
 class TutorialEntity extends ComponentBaseEntity {
-  gs: GameState;
-  onSkip: () => void;
-  constructor(gs: GameState, onSkip: () => void) {
-    const { stage } = gs;
-    super(stage, []);
-    this.gs = gs;
-    this.onSkip = onSkip;
-    const html = new MenuComponent("#ingame-msg");
+    gs: GameState;
+    onSkip: () => void;
+    constructor(gs: GameState, onSkip: () => void) {
+        const { stage } = gs;
+        super(stage, []);
+        this.gs = gs;
+        this.onSkip = onSkip;
+        const html = new MenuComponent("#ingame-msg");
 
-    this.addComponent(html);
-  }
-  setContent(content: string) {
-    const comp = this.getComponent<MenuComponent>("menu");
-    comp.el.innerHTML = content;
-  }
+        this.addComponent(html);
+    }
+    setContent(content: string) {
+        const comp = this.getComponent<MenuComponent>("menu");
+        comp.el.innerHTML = content;
+    }
 
-  init() {
-    // const c = [];
-    // c.push({ class: "menu-item", text: "continue", id: "continue" });
-    const comp = this.getComponent<MenuComponent>("menu");
-    // comp.el.innerHTML = storyContent;
+    init() {
+        // const c = [];
+        // c.push({ class: "menu-item", text: "continue", id: "continue" });
+        const comp = this.getComponent<MenuComponent>("menu");
+        // comp.el.innerHTML = storyContent;
 
-    comp.addListener("#skip", () => {
-      this.gs.stage.canvas.classList.remove("paused");
-      comp.hide();
-      this.gs.status = "running";
-      this.onSkip();
-    });
+        comp.addListener("#skip", () => {
+            this.gs.stage.canvas.classList.remove("paused");
+            comp.hide();
+            this.gs.status = "running";
+            this.onSkip();
+        });
 
-    super.init();
+        super.init();
 
-    comp.show();
-    this.gs.status = "paused";
-    this.gs.stage.canvas.classList.add("paused");
-  }
+        comp.show();
+        this.gs.status = "paused";
+        this.gs.stage.canvas.classList.add("paused");
+    }
 
-  btnClick(sel: string, cb: () => void) {
-    this.getComponent<MenuComponent>("menu").addListener(sel, cb);
-  }
+    btnClick(sel: string, cb: () => void) {
+        this.getComponent<MenuComponent>("menu").addListener(sel, cb);
+    }
 }
 
 class Background extends ComponentBaseEntity {
-  gs: GameState;
+    gs: GameState;
 
-  constructor(gs: GameState) {
-    const { stage } = gs;
-    super(stage, []);
-    this.gs = gs;
+    constructor(gs: GameState) {
+        const { stage } = gs;
+        super(stage, []);
+        this.gs = gs;
 
-    const html = new HTMLComponent("#stage");
+        const html = new HTMLComponent("#stage");
 
-    this.addComponent(html);
-  }
+        this.addComponent(html);
+    }
 
-  update(delta: number, gs?: GameState): void {
-    // const [x, y] = gs?.session?.pos || [0, 0];
-
-    // const bgs = [
-    //   [800, ["#1520A6", "#0A1172"]],
-    //   [400, ["#3944BC", "#1520A6"]],
-    //   [0, ["#0492C2", "#3944BC"]],
-    //   [-10000, ["#63C5DA", "#0492C2"]],
-    // ];
-
-    // bgs.sort((a, b) => (b[0] as number) - (a[0] as number));
-
-    // let c1 = ["#141729"];
-    // for (let k of bgs) {
-    //   const v = k[0] as number;
-
-    //   if (v < y) {
-    //     c1 = k[1] as string[];
-    //     break;
-    //   }
-    // }
-
-    // const color = `linear-gradient(${c1.join(",")})`;
-    // const color = `liner-gradient(#974ec3, #141729 10%, #313866)`;
-    // const color = `linear-gradient(0deg, #141729, #313866 30%, #505ba5)`;
-    const color = `linear-gradient(0deg, #141729, #313866 30%, #505ba5`;
-    gs.stage.canvas.style.backgroundImage = color;
-    // console.log(gs.session);
-  }
+    update(_: number, gs?: GameState): void {
+        gs.stage.canvas.style.backgroundImage = `linear-gradient(0deg, #141729, #313866 30%, #505ba5`;
+    }
 }
 
 const displayMsg = async (gs: GameState, msgFnc: (gs: GameState) => string, onSkip = () => {}) =>
-  new Promise(resolve => {
-    const tutorial = new TutorialEntity(gs, () => {
-      resolve(null);
-      onSkip();
+    new Promise(resolve => {
+        const tutorial = new TutorialEntity(gs, () => {
+            resolve(null);
+            onSkip();
+        });
+
+        tutorial.setContent(msgFnc(gs));
+        gs.addEntity(tutorial);
     });
 
-    tutorial.setContent(msgFnc(gs));
-    gs.addEntity(tutorial);
-  });
-
 (async () => {
-  const gs = new GameState();
-  gs.session.lives = 3;
+    const gs = new GameState();
+    gs.session.lives = 3;
 
-  gs.addEntity(new Background(gs));
+    gs.addEntity(new Background(gs));
 
-  gs.scene = loadingScene();
-  await gs.runScene();
+    gs.scene = loadingScene();
+    await gs.runScene();
+    gs.scene = menuScene();
+    const clicked: string = await gs.runScene();
 
-  // await displayMsg(gs, storyContent);
-  // gs.session.pos = [100, 0];
-  // gs.session.lives = 2;
-  // await displayMsg(gs, lostLife);
+    gs.status = "running";
+    const pause = new PauseEntity(gs);
+    gs.addEntity(pause);
+    let showTutorial = clicked === "new-game";
+    let win = false;
+    gs.session.lives = clicked === "infinite-game" ? 1 : 3;
 
-  gs.scene = menuScene();
-  const clicked: string = await gs.runScene();
+    while (gs.session.lives > 0) {
+        gs.scene = mainScene(clicked === "infinite-game");
+        setTimeout(async () => {
+            if (showTutorial) {
+                await displayMsg(gs, storyContent);
+                showTutorial = false;
+            }
+        }, 300);
 
-  gs.status = "running";
-  const pause = new PauseEntity(gs);
-  gs.addEntity(pause);
-  let showTutorial = clicked === "new-game";
-  let win = false;
-
-  while (gs.session.lives > 0) {
-    gs.scene = mainScene(clicked === "infinite-game");
-    setTimeout(async () => {
-      if (showTutorial) {
-        await displayMsg(gs, storyContent);
-        showTutorial = false;
-      }
-    }, 300);
-
-    const result: any = await gs.runScene();
-    if (result?.win) {
-      win = true;
-      break;
+        const result: any = await gs.runScene();
+        if (result?.win) {
+            win = true;
+            break;
+        }
+        gs.session.lives--;
+        displayMsg(gs, lostLife);
     }
-    gs.session.lives--;
-    displayMsg(gs, lostLife);
-  }
-  displayMsg(gs, win ? winGame : endGame, () => window.location.reload());
+    displayMsg(gs, win ? winGame : endGame, () => window.location.reload());
 })();
