@@ -1,3 +1,4 @@
+import { blu2 } from "../assets/pxImages";
 import {
     BoxColliderComponent,
     GravityComponent,
@@ -67,7 +68,8 @@ class ChargeRender implements IComponent {
         ctx.beginPath();
         let h = -30 * ratio;
         let w = 3;
-        let color = "#187194";
+        let color = blu2
+        
 
         if (this.en) {
             h = -40 * ratio;

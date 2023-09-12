@@ -1,4 +1,4 @@
-import { dmn1, dmn2, rawImgs, white } from "../assets/pxImages";
+import { blu1, blu2, dmn1, dmn2, rawImgs, white } from "../assets/pxImages";
 import { ImagePxsRawMap, RenderFn, ImgFnMap } from "../lib/contracts";
 import { colorizeImages } from "../lib/rendering";
 
@@ -13,7 +13,7 @@ const damagedColors = {
         "#ffffff",
         "#f9f7f5",
         "#3098c1",
-        "#187194",
+        blu2,
         "#aad1e7",
         dmn1,
         "#606060",
@@ -23,7 +23,7 @@ const damagedColors = {
 
 const dmgDemonCol = { red: [white] };
 
-const boltColor = { red: ["#187194"], pink: ["#aad1e7"], purple: ["#3098c1"] };
+const boltColor = { red: [blu2], pink: ["#aad1e7"], purple: ["#3098c1"] };
 
 const damagedDemon = colorizeImages(dmgDemonCol, rawImgs);
 const enhancedBolt = colorizeImages(boltColor, rawImgs);
@@ -90,8 +90,25 @@ const groundBlock: (c?: string) => RenderFn =
         ctx.stroke();
     };
 
+const endImage: RenderFn = (ctx, pos) => {
+    let [x, y] = pos;
+    x = Math.round(x);
+    y = Math.round(y);
+    const w = 32;
+    const h = 64;
+    ctx.fillStyle = blu1;
+    ctx.beginPath();
+    ctx.rect(x - w, y - h, w, h);
+    ctx.closePath();
+    ctx.lineWidth = 14;
+    ctx.strokeStyle = blu2;
+    ctx.fill();
+    ctx.stroke();
+};
+
 export const staticImages: ImgFnMap = {
     groundBlock: { d: [32, 32], f: groundBlock() },
+    endBlock: { d: [32, 64], f: endImage },
     dmgGroundBlock: { d: [32, 32], f: groundBlock("#3e250f") }
 };
 export const pxImages: [string, number, ImagePxsRawMap][] = [

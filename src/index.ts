@@ -6,9 +6,10 @@ import { loadingScene } from "./scenes/loadingScene";
 import { menuScene } from "./scenes/menuScene";
 import { mainScene } from "./scenes/mainScene";
 import { getProgress } from "./lib/utils";
+import { blu2 } from "./assets/pxImages";
 
 const commands = (gs: GameState) => `<table>
-<tr><td>Magic Energy</td><td><img style="border-left:4px solid #187194; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
+<tr><td>Magic Energy</td><td><img style="border-left:4px solid ${blu2}; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
 <tr><td>Jump</td><td>↑</td></tr>
 <tr><td>Move</td><td>← →</td></tr>
 <tr><td>Roll</td><td>↓</td></tr>

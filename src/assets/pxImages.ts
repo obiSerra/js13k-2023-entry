@@ -3,6 +3,8 @@ import { ImagePxsRawMap } from "../lib/contracts";
 export const white = "#f6f4f1";
 export const dmn1 = "#CF9FFF";
 export const dmn2 = "#9F2B68";
+export const blu1 = "#3098c1";
+export const blu2 = "#187194";
 
 export const rawImgs: ImagePxsRawMap = {
   idle_1: [
@@ -395,8 +397,8 @@ export const rawImgs: ImagePxsRawMap = {
     "#ffe417",
     "#ffffff",
     "#f9f7f5",
-    "#3098c1",
-    "#187194",
+    blu1,
+    blu2,
     "#aad1e7",
     dmn1,
     "#606060",
