@@ -106,7 +106,7 @@ export class Enemy extends ComponentBaseEntity {
     if (this.fireCharge.current < boltCost) return;
     const pos = this.getComponent<PositionComponent>("pos");
     const d = pos.direction * -400;
-    const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 32;
+    const start: number = pos.direction === 1 ? pos.p[0] - 5 : pos.p[0] + 40;
     const bolt = new MagicBolt(this.gs, [start, pos.p[1] + 25], [d, 0], this.eType);
     this.gs.scene.addEntity(bolt);
     this.fireCharge.use(boltCost);

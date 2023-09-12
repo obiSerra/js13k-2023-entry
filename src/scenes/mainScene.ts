@@ -140,7 +140,7 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null, end: ((
     // Generate map
     const step = ["4.", "1|", "10."];
 
-    const intro = ["30.", "2_", "1wwwww", ...step];
+    const intro = ["30.", "2_", "3.", "3_", ...step];
     const d = ["10.", "1b"];
     const demon = [...d, ...step];
     const demon2 = [...d, ...d, ...d, ...step];
@@ -152,7 +152,10 @@ const generateMap = (gs: GameState, scene: Scene, mp: null | Map = null, end: ((
     const jumps2 = [...j, "10_", "5.", ...j, "15_", "5.", ...step];
     const fight = [
         ...demon,
+        ...demon,
         ...enemy,
+        ...enemy,
+        ...demon,
         ...jumps,
         ...demon2,
         ...enemy2,

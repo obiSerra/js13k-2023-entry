@@ -11,6 +11,7 @@ import { blu2 } from "./assets/pxImages";
 const commands = (gs: GameState) => `<table>
 <tr><td>Mana</td><td><img style="border-left:4px solid ${blu2}; display: inline" src="${gs.images["shaman"]["idle_1"].src}" /></td></tr>
 <tr><td>Jump</td><td>↑</td></tr>
+<tr><td>Double Jump</td><td>↑↑</td></tr>
 <tr><td>Move</td><td>← →</td></tr>
 <tr><td>Roll</td><td>↓</td></tr>
 <tr><td>Magic Bolt</td><td>Shift</td></tr>

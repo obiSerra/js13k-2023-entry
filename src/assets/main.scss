@@ -8,173 +8,176 @@ $white: #fff;
 $black: #000;
 
 body {
-  background-color: $color_1;
-  padding: 0;
-  margin: 0;
+    background-color: $color_1;
+    padding: 0;
+    margin: 0;
 }
 
 // Helper classes
 .h {
-  display: none !important;
+    display: none !important;
 }
 .pa {
-  position: absolute;
+    position: absolute;
 }
 
 .stage-container {
-  position: relative;
-  width: 1200px;
-  height: 800px;
-  margin: 0 auto;
+    position: relative;
+    width: 1200px;
+    height: 600px;
+    margin: 0 auto;
 }
 canvas {
-  // border: 1px solid $black;
-  // border-radius: 3px;
-  // background-image: linear-gradient(#60b6ed, #164d8c, #041e42);
-  margin: auto;
-  &.paused {
-    opacity: 0.2;
-  }
+    // border: 1px solid $black;
+    // border-radius: 3px;
+    // background-image: linear-gradient(#60b6ed, #164d8c, #041e42);
+    margin: auto;
+    &.paused {
+        opacity: 0.2;
+    }
 }
 
 .stage-container {
-  position: relative;
+    position: relative;
 }
 .center-stage {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .top-left-stage {
-  top: 20px;
-  left: 20px;
+    top: 20px;
+    left: 20px;
 }
 
 .life-container {
-  width: 100px;
-  height: 20px;
-  display: block;
-  border: 1px solid $black;
+    width: 100px;
+    height: 20px;
+    display: block;
+    border: 1px solid $black;
 
-  .bar {
-    display: inline-block;
-    width: 10px;
-    height: 100%;
-    background: green;
-    display: inline-block;
-    // border-right: 1px solid white;
-  }
+    .bar {
+        display: inline-block;
+        width: 10px;
+        height: 100%;
+        background: green;
+        display: inline-block;
+        // border-right: 1px solid white;
+    }
 }
 .lives-count {
-  left: 130px;
-  img {
-    margin: 2px;
-  }
+    left: 130px;
+    img {
+        margin: 2px;
+    }
 }
 
 body {
-  font-family: Tahoma, sans-serif;
+    font-family: Tahoma, sans-serif;
 }
 
 ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 100px;
-  color: $black;
+    text-align: center;
+    margin-bottom: 100px;
+    color: $black;
 }
 
 .main-menu {
-  border: 2px solid $color_4;
-  border-radius: 10px;
-  padding: 50px 100px;
-  position: absolute;
-  background-color: $color_5;
-  color: $white;
+    border: 2px solid $color_4;
+    border-radius: 10px;
+    padding: 50px 100px;
+    position: absolute;
+    background-color: $color_5;
+    color: $white;
 
-  ul {
-    display: flex; /* establish flex container */
-    flex-direction: column; /* make main axis vertical */
-    justify-content: center; /* center items vertically, in this case */
-    align-items: center; /* center items horizontally, in this case */
+    ul {
+        display: flex; /* establish flex container */
+        flex-direction: column; /* make main axis vertical */
+        justify-content: center; /* center items vertically, in this case */
+        align-items: center; /* center items horizontally, in this case */
 
-    li {
-      text-align: center; /* will center text in <p>, which is not a flex item */
+        li {
+            text-align: center; /* will center text in <p>, which is not a flex item */
+        }
     }
-  }
 }
 
 .dialogue {
-  padding: 20px 50px;
-  border-radius: 10px;
-  border: 2px solid $color_4;
-  background-color: $color_5;
-  color: $white;
-  min-width: 600px;
-  color: $black;
+    padding: 20px 50px;
+    border-radius: 10px;
+    border: 2px solid $color_4;
+    background-color: $color_5;
+    color: $white;
+    min-width: 600px;
+    color: $black;
 
-  > div {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .tip_container {
-    display: flex;
-    &:last-child {
-      justify-content: center;
+    > div {
+        display: flex;
+        flex-direction: column;
     }
-  }
-  .col_1 {
-    width: 70%;
 
-    padding-right: 20px;
-  }
-  .col_2 {
-    width: 30%;
-    text-align: center;
-  }
+    .tip_container {
+        display: flex;
+        &:last-child {
+            justify-content: center;
+        }
+    }
+    .col_1 {
+        width: 70%;
+
+        padding-right: 20px;
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+    }
+    .col_2 {
+        width: 30%;
+        text-align: center;
+    }
 }
 
 button {
-  margin: 5px;
-  width: 200px;
-  padding: 10px 0;
-  background-color: $color_4;
-  // color: $white;
-  border-radius: 10px;
-  font-weight: bold;
+    margin: 5px;
+    width: 200px;
+    padding: 10px 0;
+    background-color: $color_4;
+    // color: $white;
+    border-radius: 10px;
+    font-weight: bold;
 }
 
 table {
-  margin: auto;
-  border-collapse: collapse;
+    margin: auto;
+    border-collapse: collapse;
 }
 tr {
-  border: 1px solid $white;
+    border: 1px solid $white;
 }
 td {
-  border: 1px solid $color_4;
-  height: 45px;
-  padding: 5px;
-  text-align: center;
+    border: 1px solid $color_4;
+    height: 45px;
+    padding: 5px;
+    text-align: center;
 }
 
 .hl-1 {
-  font-weight: bold;
+    font-weight: bold;
 }
 .hl-2 {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .fr {
-  flex-direction: row;
+    flex-direction: row;
 }
 
 .fd {
-  flex-direction: column;
+    flex-direction: column;
 }
