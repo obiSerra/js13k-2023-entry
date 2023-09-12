@@ -1,10 +1,10 @@
-import { blu1, blu2, dmn1, dmn2, rawImgs, white } from "../assets/pxImages";
+import { blu1, blu2, brown, dmn1, dmn2, rawImgs, white } from "../assets/pxImages";
 import { ImagePxsRawMap, RenderFn, ImgFnMap } from "../lib/contracts";
 import { colorizeImages } from "../lib/rendering";
 
 const damagedColors = {
     red: [
-        "#642209",
+        brown,
         "#e31937",
         "#000000",
         white,

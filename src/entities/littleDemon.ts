@@ -60,7 +60,7 @@ export class LittleDemon extends ComponentBaseEntity {
     this.action(delta, gs);
 
     // const pos = this.getComponent<PositionComponent>("pos"
-    // const rend = this.getComponent<SpriteRenderComponent>("rnd");
+    // const rend = this.getComponent<SpriteRenderComponent>("render");
 
     // if (pos.direction === 1 && rend.cA !== "idleL") rend.sAnim("idleL");
     // if (pos.direction === -1 && rend.cA !== "idle") rend.sAnim("idle");
@@ -119,7 +119,7 @@ export class LittleDemon extends ComponentBaseEntity {
     this.hits.add(id);
     const v = this.getComponent<PositionComponent>("pos").v;
     this.getComponent<PositionComponent>("pos").accelerate([v[0] * -10, -50]);
-    const rend = this.getComponent<SpriteRenderComponent>("rnd");
+    const rend = this.getComponent<SpriteRenderComponent>("render");
     if (rend.cA !== "dmg") {
       rend.sAnim("dmg");
       setTimeout(() => rend.sAnim("idle"), 100);

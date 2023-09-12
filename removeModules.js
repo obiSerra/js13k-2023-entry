@@ -27,7 +27,7 @@ const findFiles = async path => {
 };
 
 const replaceImports = c => {
-  return c.replace(new RegExp('import [a-z\\s\\n{},]* from ".*";', "gi"), "");
+  return c.replace(new RegExp('import [a-z0-9\\s\\n{},]* from ".*";', "gi"), "");
 };
 
 (async () => {

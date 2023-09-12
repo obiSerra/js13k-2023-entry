@@ -205,7 +205,8 @@ class Background extends ComponentBaseEntity {
 
     // const color = `linear-gradient(${c1.join(",")})`;
     // const color = `liner-gradient(#974ec3, #141729 10%, #313866)`;
-    const color = `linear-gradient(0deg, #141729, #313866 30%, #505ba5)`;
+    // const color = `linear-gradient(0deg, #141729, #313866 30%, #505ba5)`;
+    const color = `linear-gradient(0deg, #141729, #313866 30%, #505ba5`;
     gs.stage.canvas.style.backgroundImage = color;
     // console.log(gs.session);
   }

@@ -17,9 +17,9 @@ class MainMenu extends ComponentBaseEntity {
   init() {
     const m = "menu-item"
     const c = [
-      { class: m, text: "Story Mode", id: "new-game" },
-      { class: m, text: "Quick Game", id: "quick-game" },
-      { class: m, text: "Infinite Mode", id: "infinite-game" },
+      { class: m, text: "Tutorial", id: "new-game" },
+      { class: m, text: "Quick", id: "quick-game" },
+      { class: m, text: "Infinite", id: "infinite-game" },
     ];
 
     this.getComponent<MenuComponent>("menu").el.querySelector("ul").innerHTML = c
